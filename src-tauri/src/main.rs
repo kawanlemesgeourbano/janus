@@ -1,6 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod ai;
 mod paste;
+mod update_protocol;
+mod updates;
 use paste::*;
 use ai::*;
 use std::{fs, sync::{Mutex, atomic::{AtomicBool, Ordering}}};
@@ -27,6 +29,7 @@ fn load_settings() -> Result<Option<serde_json::Value>, String> {
 }
 #[tauri::command]
 fn save_settings(value: serde_json::Value) -> Result<(), String> {
+    if updates::is_probe(){return Ok(());}
     let path = settings_path()?;
     fs::create_dir_all(path.parent().unwrap()).map_err(|_| "Não foi possível salvar. Extraia o Janus em uma pasta onde você possa gravar arquivos.".to_string())?;
     let data = serde_json::to_vec_pretty(&value).map_err(|e| e.to_string())?;
@@ -99,15 +102,23 @@ fn dock_window(window:tauri::WebviewWindow, anchor:String, x:Option<i32>, y:Opti
 }
 
 fn main() {
+    if updates::helper_mode(){return;}
+    if updates::is_probe()&&!updates::probe_allowed(){return;}
+    let mut context=tauri::generate_context!();
+    if updates::is_probe(){for window in &mut context.config_mut().app.windows{window.visible=false;}}
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            if updates::is_probe(){return;}
             if let Some(w) = app.get_webview_window("main") { let _ = w.unminimize(); let _ = w.show(); let _ = w.set_focus(); }
         }))
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .manage(Keys::default())
         .manage(Tracking(AtomicBool::new(true)))
         .manage(PasteTarget::default())
+        .manage(updates::Updates::default())
+        .on_window_event(|window,event|{if matches!(event,tauri::WindowEvent::CloseRequested{..}){updates::on_close(window.app_handle());}})
         .setup(|app| {
+            if matches!(updates::startup(),Ok(true)){app.handle().exit(0);return Ok(());}
             let handle=app.handle().clone();
             std::thread::spawn(move || loop {
                 std::thread::sleep(std::time::Duration::from_millis(33));
@@ -126,6 +137,6 @@ fn main() {
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![load_settings, save_settings, copy_text, paste_text,configure_shortcuts,display_name,set_tracking,dock_window,ai_status,ai_connect,ai_remove,ai_ask])
-        .run(tauri::generate_context!()).expect("Não foi possível iniciar o Janus");
+        .invoke_handler(tauri::generate_handler![load_settings, save_settings, copy_text, paste_text,configure_shortcuts,display_name,set_tracking,dock_window,ai_status,ai_connect,ai_remove,ai_ask,updates::update_status,updates::update_check,updates::update_automatic,updates::update_healthy,updates::update_is_probe])
+        .run(context).expect("Não foi possível iniciar o Janus");
 }

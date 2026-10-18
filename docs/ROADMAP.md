@@ -1,19 +1,8 @@
-# Evolução planejada
-
-Os mecanismos abaixo são propostas e ainda não estão implementados.
+# Evolução do Janus
 
 ## Atualizações portáteis
 
-Destino: Releases de `kawanlemesgeourbano/janus`.
-
-1. Consultar versão estável por HTTPS ao abrir, com intervalo mínimo e botão manual.
-2. Comparar versões estruturadas e canais. Nunca ordenar nomes de arquivos para escolher a versão.
-3. Baixar o pacote para uma pasta temporária e validar assinatura com chave pública incorporada ao Janus. SHA-256 detecta corrupção; a assinatura autentica o pacote.
-4. Preparar a atualização para o próximo fechamento normal.
-5. Um auxiliar compilado aguarda o encerramento real do processo, preserva `dados`, substitui somente arquivos distribuídos e mantém backup.
-6. Restaurar a versão anterior se a primeira inicialização falhar. Falhas de conexão não impedem o uso local.
-
-Chave privada fora do repositório e aplicativo, em segredo de publicação. A primeira versão com esse mecanismo precisa ser entregue manualmente. O atualizador de instaladores MSI/NSIS não será utilizado como se atualizasse um executável portátil.
+Implementadas na versão 1.0a.1. Consulte [funcionamento, assinatura, recuperação e publicação](UPDATES.md).
 
 ## Plugins
 

@@ -1,4 +1,5 @@
 import './style.css';
+import {setupUpdater} from './updater';
 import baseCatalog from './catalog.json';
 import {parseGuidance,parameterTitles} from './guidance.mjs';
 import {guidanceTokens} from './guidance-format.mjs';
@@ -50,7 +51,7 @@ root.innerHTML = `
     <div class="filter-row"><select id="category" aria-label="Filtrar categoria"></select><button id="copy-mode" class="copy-mode" role="switch" aria-checked="true"><span>C</span><span>V</span></button></div><button id="city-guide" class="guide-link" hidden>Ver orientações do PDF</button>
     <div id="list" class="list" aria-label="Divergências"></div>
     </section><section id="parameters-page" class="content-page" hidden aria-label="Parâmetros do projeto"><div id="parameters-list"></div></section><section id="plugins-page" class="content-page" hidden aria-label="Plugins+"><div class="plugins-page-top"><button id="plugins-back">← Voltar</button><h2>Plugins para baixar</h2></div><div id="plugins-content"></div></section>
-    <section id="no-active-menu" class="no-active-menu" hidden><span aria-hidden="true">☁</span><p>Nenhum menu ativo por aqui...</p><small>Você pode ativar os menus nas configurações.</small></section><footer><span id="shortcut-hint" data-help></span><img class="gi-logo" src="./gi-logo.jpg" alt="GI Geotecnologia" width="38" height="35" decoding="async"><button id="about" class="release-button" aria-label="Sobre o Janus 1.0a">Janus 1.0a</button></footer>
+    <section id="no-active-menu" class="no-active-menu" hidden><span aria-hidden="true">☁</span><p>Nenhum menu ativo por aqui...</p><small>Você pode ativar os menus nas configurações.</small></section><footer><span id="shortcut-hint" data-help></span><img class="gi-logo" src="./gi-logo.jpg" alt="GI Geotecnologia" width="38" height="35" decoding="async"><button id="about" class="release-button" aria-label="Sobre o Janus 1.0a.1">Janus 1.0a.1</button></footer>
   </section>
   <div id="toast" role="status" aria-live="polite"></div>
 </main>
@@ -60,7 +61,7 @@ root.innerHTML = `
  <div class="settings-body">
  <section id="settings-general" class="settings-section" role="tabpanel" aria-labelledby="settings-general-tab">
   <div class="setting-card"><h3>Menus do painel</h3><p class="setting-description">Escolha o que aparece no Janus. Os atalhos continuam disponíveis.</p><label class="toggle"><span><strong>Mostrar divergências</strong><small>Lista e filtro das divergências do projeto.</small></span><input id="showDivergences" type="checkbox"></label><label class="toggle"><span><strong>Mostrar parâmetros</strong><small>Critérios e orientações do projeto.</small></span><input id="showParameters" type="checkbox"></label></div><div class="setting-card"><h3>Ajudas do programa</h3><label class="toggle"><span><strong>Mostrar ajudas</strong><small>Exibir dicas de atalhos e descrições ao passar o mouse. Os nomes dos botões continuam acessíveis.</small></span><input id="showHelp" type="checkbox"></label></div><div class="setting-card"><h3>Sua saudação</h3><p class="setting-description">Como o Janus chama você no dia a dia.</p><label class="field-label" for="user-name">NOME DE EXIBIÇÃO</label><input id="user-name" maxlength="100" placeholder="Usar nome do Windows"><p id="windows-name" class="small"></p></div>
-  <div class="setting-card"><h3>Atualizações</h3><p class="setting-description">Janus 1.0a</p><p class="small">O menu de atualização estará disponível em uma próxima versão.</p><button class="update-placeholder" disabled>Verificar atualizações · em breve</button></div><div class="setting-card"><h3>Personagem e sons</h3><label class="toggle"><span><strong>Personagem animado</strong><small>Desligue para usar apenas a cópia.</small></span><input id="assistant" type="checkbox"></label><label class="toggle"><span><strong>Sons do Janus</strong><small>Reações ao abrir, copiar e conversar.</small></span><input id="sound" type="checkbox"></label></div>
+  <div class="setting-card"><h3>Atualizações</h3><p class="setting-description">Janus 1.0a.1</p><label class="toggle"><span><strong>Verificar e baixar ao abrir</strong><small>Consulta o GitHub no máximo a cada seis horas. O pacote validado é aplicado ao fechar; seus projetos são preservados.</small></span><input id="auto-update" type="checkbox" checked></label><p id="update-status" class="small" role="status">Preparando o atualizador…</p><button id="check-update" class="update-placeholder">Verificar agora</button><p class="small">Depois de fechar, aguarde alguns segundos antes de abrir novamente. Não requer instalador ou privilégios de administrador.</p></div><div class="setting-card"><h3>Personagem e sons</h3><label class="toggle"><span><strong>Personagem animado</strong><small>Desligue para usar apenas a cópia.</small></span><input id="assistant" type="checkbox"></label><label class="toggle"><span><strong>Sons do Janus</strong><small>Reações ao abrir, copiar e conversar.</small></span><input id="sound" type="checkbox"></label></div>
  </section>
  <section id="settings-window" class="settings-section" role="tabpanel" aria-labelledby="settings-window-tab" hidden>
   <div class="setting-card"><h3>Posição habitual</h3><p class="setting-description">Dois cliques no cabeçalho trazem o Janus de volta.</p><label class="field-label" for="anchor">ONDE FICAR</label><select id="anchor"><option value="top-right">Canto superior direito</option><option value="top-left">Canto superior esquerdo</option><option value="bottom-right">Canto inferior direito</option><option value="bottom-left">Canto inferior esquerdo</option><option value="custom">Posição que eu salvei</option></select><div class="position-buttons"><button id="remember-position">Guardar posição atual</button><button id="go-home">Voltar à posição habitual</button></div></div>
@@ -77,7 +78,7 @@ root.innerHTML = `
  </section>
  </div>
 </dialog>
-<dialog id="info" aria-labelledby="info-title"><div class="dialog-top"><span class="eyebrow">GI GEOTECNOLOGIA</span><button class="icon dismiss" aria-label="Fechar informações">×</button></div><h2 id="info-title">Janus 1.0a</h2><p class="about-description">O Janus é um assistente corporativo desenvolvido para otimizar e modernizar o fluxo de trabalho nos setores de cadastramento imobiliário da GI Geotecnologia. Projetado como uma solução centralizada, o software acelera o tratamento de divergências e agiliza a consulta de parâmetros, operando em conjunto com agentes inteligentes que automatizam e dão suporte à execução das demandas operacionais. Com foco em produtividade, o Janus destaca-se por ser uma plataforma altamente customizável. A ferramenta oferece uma ampla gama de atalhos para dar fluidez ao serviço e possui uma arquitetura aberta, permitindo que os próprios usuários desenvolvam e integrem plugins personalizados por meio de uma documentação clara, simples e acessível.</p><p class="release-scope">Nesta versão, a área de plugins está preparada para expansão; instalação de plugins e documentação de integração serão disponibilizadas posteriormente.</p><details class="about-credits"><summary>Créditos e informações da versão</summary><p>Personagem geométrico e sons sintetizados próprios do Janus. Código derivado do Coucou de Louis Raillé, sob licença MIT. Consulte os créditos que acompanham o programa.</p><p id="source-note"></p><p>Preferências e projetos ficam em dados/preferencias.json ao lado do executável. As conexões de IA ficam no Gerenciador de Credenciais do Windows.</p></details></dialog>`;
+<dialog id="info" aria-labelledby="info-title"><div class="dialog-top"><span class="eyebrow">GI GEOTECNOLOGIA</span><button class="icon dismiss" aria-label="Fechar informações">×</button></div><h2 id="info-title">Janus 1.0a.1</h2><p class="about-description">O Janus é um assistente corporativo desenvolvido para otimizar e modernizar o fluxo de trabalho nos setores de cadastramento imobiliário da GI Geotecnologia. Projetado como uma solução centralizada, o software acelera o tratamento de divergências e agiliza a consulta de parâmetros, operando em conjunto com agentes inteligentes que automatizam e dão suporte à execução das demandas operacionais. Com foco em produtividade, o Janus destaca-se por ser uma plataforma altamente customizável. A ferramenta oferece uma ampla gama de atalhos para dar fluidez ao serviço e possui uma arquitetura aberta, permitindo que os próprios usuários desenvolvam e integrem plugins personalizados por meio de uma documentação clara, simples e acessível.</p><p class="release-scope">Nesta versão, a área de plugins está preparada para expansão; instalação de plugins e documentação de integração serão disponibilizadas posteriormente.</p><details class="about-credits"><summary>Créditos e informações da versão</summary><p>Personagem geométrico e sons sintetizados próprios do Janus. Código derivado do Coucou de Louis Raillé, sob licença MIT. Consulte os créditos que acompanham o programa.</p><p id="source-note"></p><p>Preferências e projetos ficam em dados/preferencias.json ao lado do executável. As conexões de IA ficam no Gerenciador de Credenciais do Windows.</p></details></dialog>`;
 const $ = <T extends HTMLElement = HTMLElement>(id:string) => document.getElementById(id) as T;
 const emptyProject:City={id:'',name:'Nenhum projeto',source:'',items:[]};
 const city = () => catalog.find(c=>c.id===prefs.city) ?? emptyProject;
@@ -270,6 +271,7 @@ function openSettings(section:SettingsSection='general') {
   showSettingsSection(section);$<HTMLDialogElement>('preferences').showModal();
 }
 async function boot() {
+  const updateProbe=native?await invoke<boolean>('update_is_probe'):false;
   try {
     const saved=native?await invoke<Partial<Prefs>|null>('load_settings'):JSON.parse(localStorage.getItem('janus.preferences')||'null');
     if(saved && typeof saved==='object') {
@@ -292,7 +294,8 @@ async function boot() {
       if(saved.copyMode==='copy'||saved.copyMode==='paste')prefs.copyMode=saved.copyMode;
     }
   }catch{toast('Preferências não puderam ser lidas. Usando os padrões.',true);}
-  if(native)systemName=await invoke<string>('display_name').catch(()=>'');
+  if(updateProbe){prefs.sound=false;prefs.autoGreeting=false;}
+  if(native&&!updateProbe)systemName=await invoke<string>('display_name').catch(()=>'');
   if(!catalog.some(c=>c.id===prefs.city))prefs.city=catalog[0]?.id||'';
   refreshCities();
   setupEnhancements();setupHelp();setupSettingsNavigation();renderPluginsPage($('plugins-content'));
@@ -306,7 +309,7 @@ async function boot() {
   $('settings').onclick=()=>openSettings();$('about').onclick=()=>$<HTMLDialogElement>('info').showModal();
   document.querySelectorAll<HTMLButtonElement>('.dismiss').forEach(b=>b.onclick=()=>b.closest('dialog')!.close());
   $('collapse').onclick=()=>void setCompact(true);$('expand').onclick=()=>void setCompact(false);
-  $('close').onclick=()=>{if(native)void getCurrentWindow().close();else toast('No aplicativo Windows, este botão encerra o Janus.');};
+  $('close').onclick=()=>{if(native)void saveChain.then(()=>getCurrentWindow().close());else toast('No aplicativo Windows, este botão encerra o Janus.');};
   const pin=async()=>{if(native)await getCurrentWindow().setAlwaysOnTop(prefs.pinned);if(!prefs.pinned){prefs.hover=true;$<HTMLInputElement>('hover').checked=true;}applyLook();save();};
   $('pin').onclick=()=>{prefs.pinned=!prefs.pinned;void pin().catch(()=>toast('Não foi possível fixar o painel.',true));};
   for(const id of ['assistant','sound','pinned','hover','smartTransparency'] as const) $(id).onchange=()=>{prefs[id]=$<HTMLInputElement>(id).checked;if(id==='pinned')void pin().catch(()=>toast('Não foi possível fixar o painel.',true));else{applyLook();save();}};
@@ -344,7 +347,7 @@ async function boot() {
     if(e.key==='Escape'&&!$('search-panel').hidden&&!document.querySelector('dialog[open]')){e.preventDefault();closeSearch();return;}
     if(e.key==='Escape'&&!document.querySelector('dialog[open]'))void setCompact(!compact);
   });
-  if(native) {
+  if(native&&!updateProbe) {
     await getCurrentWindow().setAlwaysOnTop(prefs.pinned);
     await listen<string>('janus-shortcut',async({payload:id})=>{
       if(id==='__open'){await togglePanel();return;}
@@ -356,12 +359,13 @@ async function boot() {
     await dock(false);
     await getCurrentWindow().onMoved(({payload:p})=>{if(movingProgrammatically)return;clearTimeout(moveTimer);moveTimer=window.setTimeout(()=>{prefs.lastPosition={x:p.x,y:p.y};save();},200);});
   }
-  setupAI();
+  if(!updateProbe)setupAI();
   document.addEventListener('contextmenu',e=>e.preventDefault());
   document.addEventListener('keydown',e=>{if((e.ctrlKey&&['p','s'].includes(e.key.toLowerCase()))||e.key==='F7')e.preventDefault();});
   void setupLogo($<HTMLCanvasElement>('logo')).catch(()=>toast('Não foi possível carregar a animação.',true));
   $('logo').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('logo').click();}};
-  await configureKeys();applyLook();engine.greet();save();
+  if(!updateProbe)await configureKeys();applyLook();engine.greet();if(!updateProbe)save();
+  if(updateProbe)await invoke('update_healthy');else void setupUpdater(native);
 }
 function validCity(value:any):value is City {return validProject(value);}
 function updateCopyMode(){const copying=prefs.copyMode==='copy';$('copy-mode').setAttribute('aria-checked',String(!copying));$('copy-mode').setAttribute('aria-label',copying?'Modo C: apenas copiar. Alternar para colar.':'Modo V: copiar e colar diretamente. Alternar para apenas copiar.');$('copy-mode').title=copying?'C · Apenas copia o texto para a área de transferência (Ctrl + C). Clique para usar V.':'V · Copia e cola o texto no aplicativo anterior (Ctrl + V). Clique para usar C.';}
@@ -560,7 +564,7 @@ function syncChatConnection(){
  $<HTMLButtonElement>('ask-ai').disabled=!aiConnected||aiBusy;
 }
 async function closeChat(){if(!chatOpen)return;chatOpen=false;$('janus-chat').hidden=true;root.classList.remove('chatting');Sound.play('close');await setCompact(chatReturnCompact);applyLook();}
-root.querySelector('.shell')!.insertAdjacentHTML('beforeend',`<section id="janus-chat" class="janus-chat" hidden aria-label="Chat do Janus"><div class="chat-toolbar"><button id="close-chat" aria-label="Voltar ao painel">← Voltar ao painel</button><button id="clear-chat" title="Limpar conversa deste projeto">Limpar conversa</button></div><div class="chat-intro"><div class="speech-bubble"><strong>Converse com o Janus</strong><span>Uma ajuda para o seu projeto.</span></div></div><div id="chat-transcript" class="chat-transcript" role="log" aria-label="Conversa" aria-live="polite"><div id="chat-welcome" class="chat-welcome"><h3>Em que posso ajudar?</h3><p>Faça uma pergunta, peça uma explicação ou converse sobre o projeto.</p><p class="small">A conversa fica disponível enquanto o Janus estiver aberto.</p></div><p id="chat-disconnected" class="small">Conecte um agente IA nas configurações para enviar mensagens.</p><button id="chat-connect" class="connect-chat">Conectar agente IA</button><div id="chat-messages"></div><div id="thinking" class="thinking" role="status" aria-label="Janus está pensando" hidden><span></span><span></span><span></span></div></div><div class="chat-compose"><label class="field-label" for="ai-question">SUA MENSAGEM</label><textarea id="ai-question" rows="2" maxlength="10000" placeholder="Escreva sua mensagem…"></textarea><div class="chat-compose-actions"><small data-help>Enter envia · Shift + Enter pula linha</small><button class="primary" id="ask-ai">Enviar ↑</button></div></div><label class="chat-context"><input type="checkbox" id="ai-context"> Incluir divergências e parâmetros do projeto</label><p class="chat-privacy">Ao enviar, sua mensagem, as últimas mensagens da conversa e o conteúdo marcado vão para o provedor de IA conectado.</p><span class="app-version chat-version">Janus 1.0a</span></section>`);
+root.querySelector('.shell')!.insertAdjacentHTML('beforeend',`<section id="janus-chat" class="janus-chat" hidden aria-label="Chat do Janus"><div class="chat-toolbar"><button id="close-chat" aria-label="Voltar ao painel">← Voltar ao painel</button><button id="clear-chat" title="Limpar conversa deste projeto">Limpar conversa</button></div><div class="chat-intro"><div class="speech-bubble"><strong>Converse com o Janus</strong><span>Uma ajuda para o seu projeto.</span></div></div><div id="chat-transcript" class="chat-transcript" role="log" aria-label="Conversa" aria-live="polite"><div id="chat-welcome" class="chat-welcome"><h3>Em que posso ajudar?</h3><p>Faça uma pergunta, peça uma explicação ou converse sobre o projeto.</p><p class="small">A conversa fica disponível enquanto o Janus estiver aberto.</p></div><p id="chat-disconnected" class="small">Conecte um agente IA nas configurações para enviar mensagens.</p><button id="chat-connect" class="connect-chat">Conectar agente IA</button><div id="chat-messages"></div><div id="thinking" class="thinking" role="status" aria-label="Janus está pensando" hidden><span></span><span></span><span></span></div></div><div class="chat-compose"><label class="field-label" for="ai-question">SUA MENSAGEM</label><textarea id="ai-question" rows="2" maxlength="10000" placeholder="Escreva sua mensagem…"></textarea><div class="chat-compose-actions"><small data-help>Enter envia · Shift + Enter pula linha</small><button class="primary" id="ask-ai">Enviar ↑</button></div></div><label class="chat-context"><input type="checkbox" id="ai-context"> Incluir divergências e parâmetros do projeto</label><p class="chat-privacy">Ao enviar, sua mensagem, as últimas mensagens da conversa e o conteúdo marcado vão para o provedor de IA conectado.</p><span class="app-version chat-version">Janus 1.0a.1</span></section>`);
 root.insertAdjacentHTML('afterend',`
 <dialog id="guidance-menu" aria-labelledby="guidance-title"><div class="dialog-top"><h2 id="guidance-title"></h2><button class="icon dismiss" aria-label="Fechar orientações da categoria">×</button></div><div id="guidance-content"></div></dialog>
 <dialog id="category-picker"><div class="dialog-top"><span class="eyebrow">ESCOLHA A DIVERGÊNCIA</span><button id="close-picker" class="icon" aria-label="Fechar opções">×</button></div><h2 id="picker-title"></h2><button id="toggle-picker-guidance" class="picker-guidance-toggle" aria-controls="picker-guidance">Ocultar orientações</button><div id="picker-guidance"></div><p id="picker-action-hint" class="small" data-help>↑ ↓ para escolher · Enter para colar · Esc para voltar</p><div id="picker-options" role="listbox" aria-label="Opções da divergência"></div></dialog>

@@ -17,3 +17,6 @@ dados/
 *.exe
 *.pdb
 *.log
+*.dpapi
+*.secret
+.janus-update/
