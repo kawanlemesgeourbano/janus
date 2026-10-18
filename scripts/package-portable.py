@@ -29,7 +29,8 @@ esta versão não migra o formato dos projetos.
 
 Projetos: dados/preferencias.json. Chaves de IA: Credenciais do Windows.
 Atualizações: .janus-update. Não distribua essas pastas com o aplicativo.
-Plugins+ continua reservado para uma versão futura.
+Plugins+ oferece o Menu circular como download opcional. Baixe e ative
+se desejar; desativar ou remover o plugin preserva seus projetos.
 
 Código, versões e licenças: https://github.com/kawanlemesgeourbano/janus
 '''

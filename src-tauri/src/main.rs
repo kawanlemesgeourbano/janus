@@ -3,6 +3,8 @@ mod ai;
 mod paste;
 mod update_protocol;
 mod updates;
+mod plugins;
+mod window_shape;
 use paste::*;
 use ai::*;
 use std::{fs, sync::{Mutex, atomic::{AtomicBool, Ordering}}};
@@ -106,16 +108,18 @@ fn main() {
     if updates::is_probe()&&!updates::probe_allowed(){return;}
     let mut context=tauri::generate_context!();
     if updates::is_probe(){for window in &mut context.config_mut().app.windows{window.visible=false;}}
-    tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
-            if updates::is_probe(){return;}
+    let builder=tauri::Builder::default();
+    // A hidden, read-only update probe must not activate an already running copy.
+    let builder=if updates::is_probe(){builder}else{builder.plugin(tauri_plugin_single_instance::init(|app, _, _| {
             if let Some(w) = app.get_webview_window("main") { let _ = w.unminimize(); let _ = w.show(); let _ = w.set_focus(); }
-        }))
+        }))};
+    builder
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .manage(Keys::default())
         .manage(Tracking(AtomicBool::new(true)))
         .manage(PasteTarget::default())
         .manage(updates::Updates::default())
+        .manage(plugins::Plugins::default())
         .on_window_event(|window,event|{if matches!(event,tauri::WindowEvent::CloseRequested{..}){updates::on_close(window.app_handle());}})
         .setup(|app| {
             if matches!(updates::startup(),Ok(true)){app.handle().exit(0);return Ok(());}
@@ -137,6 +141,6 @@ fn main() {
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![load_settings, save_settings, copy_text, paste_text,configure_shortcuts,display_name,set_tracking,dock_window,ai_status,ai_connect,ai_remove,ai_ask,updates::update_status,updates::update_check,updates::update_automatic,updates::update_healthy,updates::update_is_probe])
+        .invoke_handler(tauri::generate_handler![load_settings, save_settings, copy_text, paste_text,configure_shortcuts,display_name,set_tracking,dock_window,ai_status,ai_connect,ai_remove,ai_ask,updates::update_status,updates::update_check,updates::update_automatic,updates::update_healthy,updates::update_is_probe,plugins::plugin_status,plugins::plugin_install,plugins::plugin_toggle,plugins::plugin_remove,window_shape::radial_region])
         .run(context).expect("Não foi possível iniciar o Janus");
 }

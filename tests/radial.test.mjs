@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {generateKeyPairSync,sign} from 'node:crypto';
+import {RADIAL,COMPACT,PICKER,sector,circle,pickerPage,moveSelection} from '../src/radial-model.mjs';
+import {parsePlugin,verifyPlugin} from '../src/plugin-model.mjs';
+const layout=JSON.parse(readFileSync(new URL('../plugins/menu-circular/plugin.json',import.meta.url),'utf8'));
+test('radial window regions stay inside their window at every page size',()=>{
+ for(const geometry of [RADIAL,COMPACT,PICKER])for(const [x,y] of circle(geometry)){assert.ok(x>=0&&x<=geometry.width);assert.ok(y>=0&&y<=geometry.height);}
+ for(let count=1;count<=5;count++)for(let index=0;index<count;index++)for(const [x,y] of sector(index,count).points){assert.ok(Number.isFinite(x)&&Number.isFinite(y));assert.ok(x>=0&&x<=RADIAL.width);assert.ok(y>=0&&y<=RADIAL.height);}
+});
+test('circular picker paginates without dropping options and wraps navigation',()=>{
+ const covered=new Set();for(let i=0;i<23;i++){const p=pickerPage(23,i);assert.ok(i>=p.start&&i<p.end);for(let j=p.start;j<p.end;j++)covered.add(j);}assert.equal(covered.size,23);
+ assert.equal(moveSelection(0,23,'ArrowUp'),22);assert.equal(moveSelection(22,23,'ArrowRight'),0);assert.equal(moveSelection(9,23,'Home'),0);assert.equal(moveSelection(0,23,'End'),22);assert.equal(moveSelection(0,23,'PageDown'),5);
+});
+test('layout has no project access and rejects injected colors or extra permissions',()=>{
+ assert.equal(parsePlugin(layout).id,'menu-circular');
+ assert.throws(()=>parsePlugin({...layout,permissions:['project.write']}));assert.throws(()=>parsePlugin({...layout,palette:{...layout.palette,paper:'url(https://example.com)'}}));
+ assert.throws(()=>parsePlugin({...layout,slots:[...layout.slots.slice(0,4),layout.slots[0]]}));
+});
+test('browser plugin installation verifies its signed payload before use',async()=>{
+ const {privateKey,publicKey}=generateKeyPairSync('ed25519'),payload=Buffer.from(JSON.stringify(layout)),key=publicKey.export({format:'der',type:'spki'}).subarray(-32).toString('hex');
+ const envelope={payload:payload.toString('hex'),signature:sign(null,payload,privateKey).toString('hex')};assert.equal((await verifyPlugin(envelope,key)).name,layout.name);
+ const corrupt={...envelope,payload:Buffer.from(JSON.stringify({...layout,name:'Forged'})).toString('hex')};await assert.rejects(()=>verifyPlugin(corrupt,key));
+});

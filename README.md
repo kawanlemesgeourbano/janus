@@ -4,13 +4,23 @@ Assistente portátil para Windows: consulta de divergências e parâmetros, atal
 
 ## Baixar Janus
 
-[**⬇ Baixar Janus 1.0a.1 para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.1/Janus-Windows-portatil.zip)
+[**⬇ Baixar Janus para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.2/Janus-Windows-portatil.zip)
 
 Extraia o ZIP em uma pasta onde você possa salvar arquivos e abra **Janus.exe**. Sem instalador e sem execução como administrador. Windows de 64 bits com Microsoft Edge WebView2 disponível.
 
 O programa começa sem projetos cadastrados. Quem usa 1.0a precisa fechar o Janus e substituir o executável uma vez, mantendo a pasta `dados`. Depois, o atualizador verifica novas versões ao abrir, baixa o pacote assinado e aplica ao fechar. Aguarde alguns segundos antes de abrir novamente.
 
-[Detalhes da versão e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.1). Esta é uma versão alpha.
+[Detalhes do download e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.2). Esta é uma versão alpha.
+
+## Menu circular · plugin opcional
+
+<img src="docs/images/menu-circular.png" alt="Prévia do menu circular opcional do Janus" width="300">
+
+No Janus, abra **Plugins+ → Menu circular → Baixar plugin → Ativar**. O menu circular e os seletores de cópia passam a usar setores ao redor do centro, com navegação por mouse e teclado.
+
+Use **Plugins+ → Desativar** para voltar ao painel original, ou **Remover** para excluir o pacote. Trocar o projeto ativo não altera a ativação do plugin. O download é separado do executável e não é obrigatório.
+
+[Conheça o plugin no GitHub](plugins/menu-circular/README.md) · [Formato e funcionamento](docs/PLUGINS.md)
 
 ## Dados dos projetos
 
@@ -35,7 +45,7 @@ O executável fica em `src-tauri/target/release/janus.exe`. Distribua somente o 
 
 Personagem geométrico próprio em `src/avatar.ts`, sons sintetizados em `src/core/sound.ts`. Os recursos restritos do Coucou não estão incluídos. Logos Janus e GI fornecidas pelo responsável pelo projeto. Fontes com licenças em `public/fonts`.
 
-O [atualizador portátil](docs/UPDATES.md) está disponível a partir de 1.0a.1. Configurações > Geral permite verificar agora ou desativar a busca automática. O carregamento de plugins **ainda não está implementado**; Plugins+ permanece uma área reservada. Consulte [o plano de integração](docs/ROADMAP.md).
+O [atualizador portátil](docs/UPDATES.md) está disponível a partir de 1.0a.1. Configurações > Geral permite verificar agora ou desativar a busca automática. Plugins+ oferece o primeiro [plugin de interface opcional](docs/PLUGINS.md). Outros tipos de integração continuam em planejamento.
 
 Base de código: Coucou, de Louis Raillé, sob MIT; aviso preservado em `LICENSE-COUCOU`. Consulte [os créditos](CREDITS.md) e [as condições dos recursos](LICENSE-ASSETS.md).
 

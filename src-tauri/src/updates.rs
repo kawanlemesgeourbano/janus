@@ -14,14 +14,14 @@ impl Default for Status{fn default()->Self{Self{automatic:true,last_check:0,read
 #[derive(Clone,Serialize,Deserialize)]struct Receipt{phase:String,version:String,entry:String,nonce:String,existing:Vec<String>}
 fn now()->u64{SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs()}
 fn root()->Result<PathBuf,String>{std::env::current_exe().map_err(|e|e.to_string())?.parent().ok_or("Pasta indisponível")?.canonicalize().map_err(|e|e.to_string())}
-fn normal_file(path:&Path)->Result<(),String>{
+pub(crate) fn normal_file(path:&Path)->Result<(),String>{
     if let Ok(meta)=fs::symlink_metadata(path){
         #[cfg(windows)]{use std::os::windows::fs::MetadataExt;if meta.file_attributes()&0x400!=0{return Err("Links não são permitidos na pasta de atualização".into());}}
         if meta.file_type().is_symlink(){return Err("Links não são permitidos na atualização".into());}
     }Ok(())
 }
 fn cache(root:&Path)->Result<PathBuf,String>{let path=root.join(".janus-update");normal_file(&path)?;fs::create_dir_all(&path).map_err(|_|"Não foi possível gravar a atualização nesta pasta")?;Ok(path)}
-fn atomic(path:&Path,bytes:&[u8])->Result<(),String>{normal_file(path)?;let tmp=path.with_file_name(format!(".{}.janus-new",path.file_name().ok_or("Arquivo inválido")?.to_string_lossy()));normal_file(&tmp)?;let mut file=fs::File::create(&tmp).map_err(|e|e.to_string())?;file.write_all(bytes).and_then(|_|file.sync_all()).map_err(|e|e.to_string())?;drop(file);fs::rename(tmp,path).map_err(|e|e.to_string())}
+pub(crate) fn atomic(path:&Path,bytes:&[u8])->Result<(),String>{normal_file(path)?;let tmp=path.with_file_name(format!(".{}.janus-new",path.file_name().ok_or("Arquivo inválido")?.to_string_lossy()));normal_file(&tmp)?;let mut file=fs::File::create(&tmp).map_err(|e|e.to_string())?;file.write_all(bytes).and_then(|_|file.sync_all()).map_err(|e|e.to_string())?;drop(file);fs::rename(tmp,path).map_err(|e|e.to_string())}
 fn read_status(dir:&Path)->Status{let mut value:Status=fs::read(dir.join("state.json")).ok().and_then(|b|serde_json::from_slice(&b).ok()).unwrap_or_default();value.current=CURRENT.into();value}
 fn write_status(dir:&Path,status:&Status)->Result<(),String>{atomic(&dir.join("state.json"),&serde_json::to_vec(status).map_err(|e|e.to_string())?)}
 fn receipt(dir:&Path)->Option<Receipt>{fs::read(dir.join("receipt.json")).ok().and_then(|b|serde_json::from_slice(&b).ok())}

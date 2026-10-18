@@ -1,6 +1,6 @@
 [package]
 name = "janus"
-version = "1.0.1-alpha.1"
+version = "1.0.2-alpha.1"
 edition = "2021"
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -19,7 +19,7 @@ hex = "0.4"
 semver = "1"
 zip = { version = "2.4.2", default-features = false, features = ["deflate"] }
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse", "Win32_Security_Authentication_Identity", "Win32_NetworkManagement_NetManagement"] }
+windows = { version = "0.62", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse", "Win32_Security_Authentication_Identity", "Win32_NetworkManagement_NetManagement"] }
 [profile.release]
 opt-level = "s"
 strip = true

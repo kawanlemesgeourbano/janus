@@ -1,11 +1,14 @@
 import './style.css';
+import './radial.css';
 import {setupUpdater} from './updater';
 import baseCatalog from './catalog.json';
 import {parseGuidance,parameterTitles} from './guidance.mjs';
 import {guidanceTokens} from './guidance-format.mjs';
 import {findGuidanceNote,projectLabel,mergeProjects,validProject,parameterLabel} from './project-ui.mjs';
 import {welcomeKey,welcomeText,firstNames,dragSurface,shortMessage,agentLabel,pickerAction} from './interaction-model.mjs';
-import {renderPluginsPage} from './plugins';
+import {setupPluginsPage,type Layout} from './plugin-manager';
+import {RadialView,type RadialFrame} from './radial';
+import {moveSelection,PAGE_SIZE} from './radial-model.mjs';
 import { greeting, shortcutText, shortcutFromEvent, parseDivergencePages } from './import-model.mjs';
 import { categoryGroups, categoryShortcut, canonicalShortcut } from './categories.mjs';
 import { setupLogo } from './logo';
@@ -20,7 +23,7 @@ import { getCurrentWindow, LogicalSize, PhysicalPosition } from '@tauri-apps/api
 type Item = {key:string; category:string; text:string};
 type City = {id:string;name:string;source:string;items:Item[];documentText?:string;guidance?:Guidance};
 const catalog:City[]=structuredClone(baseCatalog);
-type Prefs = {settingsVersion:number;name:string; anchor:string; position?:{x:number;y:number}; lastPosition?:{x:number;y:number}; geminiModel:string; autoGreeting:boolean; showHelp:boolean; welcomeAttempt?:string; welcomeCache?:{key:string;text:string}; showDivergences:boolean; showParameters:boolean; showPickerGuidance:boolean; smartTransparency:boolean; customCities:City[]; bindings:Record<string,Record<string,string>>; city:string;  assistant:boolean; sound:boolean; pinned:boolean; opacity:number; divergenceOpacity:number; copyMode:'copy'|'paste'; hover:boolean; shortcuts:boolean; prefix:string};
+type Prefs = {settingsVersion:number;name:string; anchor:string; position?:{x:number;y:number}; lastPosition?:{x:number;y:number}; radialCompact?:boolean; geminiModel:string; autoGreeting:boolean; showHelp:boolean; welcomeAttempt?:string; welcomeCache?:{key:string;text:string}; showDivergences:boolean; showParameters:boolean; showPickerGuidance:boolean; smartTransparency:boolean; customCities:City[]; bindings:Record<string,Record<string,string>>; city:string;  assistant:boolean; sound:boolean; pinned:boolean; opacity:number; divergenceOpacity:number; copyMode:'copy'|'paste'; hover:boolean; shortcuts:boolean; prefix:string};
 const native = '__TAURI_INTERNALS__' in window;
 const defaults:Prefs = {settingsVersion:10,showHelp:true,autoGreeting:true,showDivergences:true,showParameters:true,showPickerGuidance:true,name:'',anchor:'top-right',smartTransparency:true,customCities:[],bindings:{},city:'',geminiModel:'gemini-flash-latest',assistant:true,sound:true,pinned:true,opacity:96,divergenceOpacity:100,copyMode:'paste',hover:false,shortcuts:true,prefix:'Control+Shift'};
 let prefs:Prefs = structuredClone(defaults);
@@ -40,6 +43,7 @@ root.innerHTML = `
     <div class="window-actions"><button id="expand" class="icon" aria-label="Expandir painel" title="Expandir painel">↗</button><button id="pin" class="icon" aria-label="Fixar sobre outras janelas" title="Fixar sobre outras janelas"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3 6 0-1 6 4 4v2H6v-2l4-4-1-6Z M12 15v7"/></svg></button><button id="collapse" class="icon" aria-label="Recolher painel" title="Recolher painel">−</button><button id="close" class="icon" aria-label="Fechar Janus" title="Fechar Janus">×</button></div>
   </header>
   <section class="workspace">
+    <button id="radial-return" class="radial-return" hidden>← Voltar ao menu circular</button>
     <div class="city-row"><label for="city">PROJETO ATIVO</label><button id="open-ai" class="local" title="Configurar agente IA"><i></i><span id="ai-badge">Local</span></button></div>
     <div class="city-select"><div class="project-select-wrap"><select id="city" aria-label="Projeto ativo"></select><svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4"/></svg></div><button id="edit-city" title="Editar projeto ativo" aria-label="Editar projeto ativo"><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4 5 5M4 20l4-1L20 7a2 2 0 0 0-5-5L3 14l-1 6z"/></svg></button><button id="add-city" title="Adicionar projeto ou importar PDF" aria-label="Adicionar projeto ou importar PDF">+</button></div>
     <div class="intro"><h2 id="greeting"></h2><p id="day-message"></p></div>
@@ -51,7 +55,7 @@ root.innerHTML = `
     <div class="filter-row"><select id="category" aria-label="Filtrar categoria"></select><button id="copy-mode" class="copy-mode" role="switch" aria-checked="true"><span>C</span><span>V</span></button></div><button id="city-guide" class="guide-link" hidden>Ver orientações do PDF</button>
     <div id="list" class="list" aria-label="Divergências"></div>
     </section><section id="parameters-page" class="content-page" hidden aria-label="Parâmetros do projeto"><div id="parameters-list"></div></section><section id="plugins-page" class="content-page" hidden aria-label="Plugins+"><div class="plugins-page-top"><button id="plugins-back">← Voltar</button><h2>Plugins para baixar</h2></div><div id="plugins-content"></div></section>
-    <section id="no-active-menu" class="no-active-menu" hidden><span aria-hidden="true">☁</span><p>Nenhum menu ativo por aqui...</p><small>Você pode ativar os menus nas configurações.</small></section><footer><span id="shortcut-hint" data-help></span><img class="gi-logo" src="./gi-logo.jpg" alt="GI Geotecnologia" width="38" height="35" decoding="async"><button id="about" class="release-button" aria-label="Sobre o Janus 1.0a.1">Janus 1.0a.1</button></footer>
+    <section id="no-active-menu" class="no-active-menu" hidden><span aria-hidden="true">☁</span><p>Nenhum menu ativo por aqui...</p><small>Você pode ativar os menus nas configurações.</small></section><footer><span id="shortcut-hint" data-help></span><img class="gi-logo" src="./gi-logo.jpg" alt="GI Geotecnologia" width="38" height="35" decoding="async"><button id="about" class="release-button" aria-label="Sobre o Janus 1.0a.2">Janus 1.0a.2</button></footer>
   </section>
   <div id="toast" role="status" aria-live="polite"></div>
 </main>
@@ -61,7 +65,7 @@ root.innerHTML = `
  <div class="settings-body">
  <section id="settings-general" class="settings-section" role="tabpanel" aria-labelledby="settings-general-tab">
   <div class="setting-card"><h3>Menus do painel</h3><p class="setting-description">Escolha o que aparece no Janus. Os atalhos continuam disponíveis.</p><label class="toggle"><span><strong>Mostrar divergências</strong><small>Lista e filtro das divergências do projeto.</small></span><input id="showDivergences" type="checkbox"></label><label class="toggle"><span><strong>Mostrar parâmetros</strong><small>Critérios e orientações do projeto.</small></span><input id="showParameters" type="checkbox"></label></div><div class="setting-card"><h3>Ajudas do programa</h3><label class="toggle"><span><strong>Mostrar ajudas</strong><small>Exibir dicas de atalhos e descrições ao passar o mouse. Os nomes dos botões continuam acessíveis.</small></span><input id="showHelp" type="checkbox"></label></div><div class="setting-card"><h3>Sua saudação</h3><p class="setting-description">Como o Janus chama você no dia a dia.</p><label class="field-label" for="user-name">NOME DE EXIBIÇÃO</label><input id="user-name" maxlength="100" placeholder="Usar nome do Windows"><p id="windows-name" class="small"></p></div>
-  <div class="setting-card"><h3>Atualizações</h3><p class="setting-description">Janus 1.0a.1</p><label class="toggle"><span><strong>Verificar e baixar ao abrir</strong><small>Consulta o GitHub no máximo a cada seis horas. O pacote validado é aplicado ao fechar; seus projetos são preservados.</small></span><input id="auto-update" type="checkbox" checked></label><p id="update-status" class="small" role="status">Preparando o atualizador…</p><button id="check-update" class="update-placeholder">Verificar agora</button><p class="small">Depois de fechar, aguarde alguns segundos antes de abrir novamente. Não requer instalador ou privilégios de administrador.</p></div><div class="setting-card"><h3>Personagem e sons</h3><label class="toggle"><span><strong>Personagem animado</strong><small>Desligue para usar apenas a cópia.</small></span><input id="assistant" type="checkbox"></label><label class="toggle"><span><strong>Sons do Janus</strong><small>Reações ao abrir, copiar e conversar.</small></span><input id="sound" type="checkbox"></label></div>
+  <div class="setting-card"><h3>Atualizações</h3><p class="setting-description">Janus 1.0a.2</p><label class="toggle"><span><strong>Verificar e baixar ao abrir</strong><small>Consulta o GitHub no máximo a cada seis horas. O pacote validado é aplicado ao fechar; seus projetos são preservados.</small></span><input id="auto-update" type="checkbox" checked></label><p id="update-status" class="small" role="status">Preparando o atualizador…</p><button id="check-update" class="update-placeholder">Verificar agora</button><p class="small">Depois de fechar, aguarde alguns segundos antes de abrir novamente. Não requer instalador ou privilégios de administrador.</p></div><div class="setting-card"><h3>Personagem e sons</h3><label class="toggle"><span><strong>Personagem animado</strong><small>Desligue para usar apenas a cópia.</small></span><input id="assistant" type="checkbox"></label><label class="toggle"><span><strong>Sons do Janus</strong><small>Reações ao abrir, copiar e conversar.</small></span><input id="sound" type="checkbox"></label></div>
  </section>
  <section id="settings-window" class="settings-section" role="tabpanel" aria-labelledby="settings-window-tab" hidden>
   <div class="setting-card"><h3>Posição habitual</h3><p class="setting-description">Dois cliques no cabeçalho trazem o Janus de volta.</p><label class="field-label" for="anchor">ONDE FICAR</label><select id="anchor"><option value="top-right">Canto superior direito</option><option value="top-left">Canto superior esquerdo</option><option value="bottom-right">Canto inferior direito</option><option value="bottom-left">Canto inferior esquerdo</option><option value="custom">Posição que eu salvei</option></select><div class="position-buttons"><button id="remember-position">Guardar posição atual</button><button id="go-home">Voltar à posição habitual</button></div></div>
@@ -78,10 +82,65 @@ root.innerHTML = `
  </section>
  </div>
 </dialog>
-<dialog id="info" aria-labelledby="info-title"><div class="dialog-top"><span class="eyebrow">GI GEOTECNOLOGIA</span><button class="icon dismiss" aria-label="Fechar informações">×</button></div><h2 id="info-title">Janus 1.0a.1</h2><p class="about-description">O Janus é um assistente corporativo desenvolvido para otimizar e modernizar o fluxo de trabalho nos setores de cadastramento imobiliário da GI Geotecnologia. Projetado como uma solução centralizada, o software acelera o tratamento de divergências e agiliza a consulta de parâmetros, operando em conjunto com agentes inteligentes que automatizam e dão suporte à execução das demandas operacionais. Com foco em produtividade, o Janus destaca-se por ser uma plataforma altamente customizável. A ferramenta oferece uma ampla gama de atalhos para dar fluidez ao serviço e possui uma arquitetura aberta, permitindo que os próprios usuários desenvolvam e integrem plugins personalizados por meio de uma documentação clara, simples e acessível.</p><p class="release-scope">Nesta versão, a área de plugins está preparada para expansão; instalação de plugins e documentação de integração serão disponibilizadas posteriormente.</p><details class="about-credits"><summary>Créditos e informações da versão</summary><p>Personagem geométrico e sons sintetizados próprios do Janus. Código derivado do Coucou de Louis Raillé, sob licença MIT. Consulte os créditos que acompanham o programa.</p><p id="source-note"></p><p>Preferências e projetos ficam em dados/preferencias.json ao lado do executável. As conexões de IA ficam no Gerenciador de Credenciais do Windows.</p></details></dialog>`;
+<dialog id="info" aria-labelledby="info-title"><div class="dialog-top"><span class="eyebrow">GI GEOTECNOLOGIA</span><button class="icon dismiss" aria-label="Fechar informações">×</button></div><h2 id="info-title">Janus 1.0a.2</h2><p class="about-description">O Janus é um assistente corporativo desenvolvido para otimizar e modernizar o fluxo de trabalho nos setores de cadastramento imobiliário da GI Geotecnologia. Projetado como uma solução centralizada, o software acelera o tratamento de divergências e agiliza a consulta de parâmetros, operando em conjunto com agentes inteligentes que automatizam e dão suporte à execução das demandas operacionais. Com foco em produtividade, o Janus destaca-se por ser uma plataforma altamente customizável. A ferramenta oferece uma ampla gama de atalhos para dar fluidez ao serviço e possui uma arquitetura aberta, permitindo que os próprios usuários desenvolvam e integrem plugins personalizados por meio de uma documentação clara, simples e acessível.</p><p class="release-scope">Plugins+ permite baixar, ativar e desativar o Menu circular. Este primeiro formato personaliza a interface; outros tipos de integração serão adicionados posteriormente.</p><details class="about-credits"><summary>Créditos e informações da versão</summary><p>Personagem geométrico e sons sintetizados próprios do Janus. Código derivado do Coucou de Louis Raillé, sob licença MIT. Consulte os créditos que acompanham o programa.</p><p id="source-note"></p><p>Preferências e projetos ficam em dados/preferencias.json ao lado do executável. As conexões de IA ficam no Gerenciador de Credenciais do Windows.</p></details></dialog>`;
 const $ = <T extends HTMLElement = HTMLElement>(id:string) => document.getElementById(id) as T;
 const emptyProject:City={id:'',name:'Nenhum projeto',source:'',items:[]};
 const city = () => catalog.find(c=>c.id===prefs.city) ?? emptyProject;
+let radialLayout:Layout|null=null,radialView:RadialView|null=null,radialShown=false,radialPicker=false,pickerReturnRadial=false;
+let radialFrame:RadialFrame|null=null,radialSizing=Promise.resolve();
+async function sizeRadial(frame:RadialFrame,force=false){
+ const old=radialFrame;radialFrame=frame;root.style.width=frame.geometry.width+'px';root.style.height=frame.geometry.height+'px';
+ if(!native)return;
+ if(!force&&old&&old.geometry.width===frame.geometry.width&&old.geometry.height===frame.geometry.height&&JSON.stringify(old.polygons)===JSON.stringify(frame.polygons))return;
+ radialSizing=radialSizing.then(async()=>{
+  const win=getCurrentWindow(),position=await win.outerPosition(),scale=window.devicePixelRatio||1;
+  movingProgrammatically=true;
+  try{
+   await invoke('radial_region',{polygons:null});await win.setMinSize(null);await win.setSize(new LogicalSize(frame.geometry.width,frame.geometry.height));
+   const x=old?position.x+(old.geometry.cx-frame.geometry.cx)*scale:(prefs.lastPosition?.x??position.x),y=old?position.y+(old.geometry.cy-frame.geometry.cy)*scale:(prefs.lastPosition?.y??position.y);
+   await invoke('dock_window',{anchor:'custom',x:Math.round(x),y:Math.round(y)});await invoke('radial_region',{polygons:frame.polygons});
+   const p=await win.outerPosition();prefs.lastPosition={x:p.x,y:p.y};save();
+  }finally{movingProgrammatically=false;}
+ }).catch(()=>toast('Não foi possível ajustar o menu circular. Use Plugins+ para desativá-lo.',true));
+ await radialSizing;
+}
+async function showRadial(value=false){
+ if(!radialLayout||!radialView)return;const changed=prefs.radialCompact!==value;prefs.radialCompact=value;compact=value;radialShown=true;radialPicker=false;root.classList.add('radial-mode');root.classList.remove('compact');
+ const frame=radialView.main(value,{divergences:groups().length,parameters:guidanceForCity().parameters.filter(s=>s.text.trim()).length},action=>void radialAction(action));
+ await sizeRadial(frame);applyLook();if(changed)save();
+}
+async function leaveRadial(){
+ if(!radialShown)return;radialShown=false;radialPicker=false;await radialSizing;radialFrame=null;compact=false;root.classList.remove('radial-mode','compact');root.style.width='';root.style.height='';
+ if(native){await invoke('radial_region',{polygons:null});await getCurrentWindow().setMinSize(null);await getCurrentWindow().setSize(new LogicalSize(460,740));await dock(false);}
+}
+async function radialAction(action:string){
+ await leaveRadial();
+ if(action==='settings'){openSettings();return;}
+ if(action==='agent'){if(aiConnected)await openChat();else openSettings('agent');return;}
+ showPage(action==='parameters'?'parameters':action==='plugins'?'plugins':'divergences');
+}
+async function changePlugin(layout:Layout|null){
+ if(pickerActive)await closeCategory();if(radialShown)await leaveRadial();radialView?.destroy();radialView=null;radialLayout=layout;
+ $('radial-return').hidden=!layout;
+ if(layout){if(chatOpen)await closeChat();document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());radialView=new RadialView(root,layout);await showRadial(Boolean(prefs.radialCompact));}
+}
+function paintRadialPicker(focus=false){
+ if(!radialView)return;const frame=radialView.picker({title:$('picker-title').textContent||pickerName,items:pickerItems.map(item=>({text:directText(item.text)})),index:pickerIndex,note:categoryNote(pickerName),guidance:prefs.showPickerGuidance,copyMode:prefs.copyMode,
+ pick:index=>void pick(index),select:index=>{if(index===pickerIndex)return;pickerIndex=index;paintRadialPicker();},close:()=>void closeCategory(),toggleGuidance:()=>{prefs.showPickerGuidance=!prefs.showPickerGuidance;save();paintRadialPicker();}});
+ void sizeRadial(frame);if(focus)radialView.focus(pickerIndex%PAGE_SIZE);
+}
+function radialKeys(e:KeyboardEvent){
+ if(!radialShown||e.ctrlKey||e.altKey||e.metaKey)return false;
+ if(radialPicker){
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'].includes(e.key)){e.preventDefault();pickerIndex=moveSelection(pickerIndex,pickerItems.length,e.key);paintRadialPicker(true);return true;}
+  if(e.key==='Escape'){e.preventDefault();void closeCategory();return true;}
+  if(e.key==='Enter'&&(e.target as HTMLElement).closest('.radial-petal')){e.preventDefault();void pick(pickerIndex);return true;}
+ }else{
+  if(/^[1-5]$/.test(e.key)&&!compact){e.preventDefault();const slot=radialLayout?.slots[Number(e.key)-1];if(slot)void radialAction(slot.action);return true;}
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)&&!compact){e.preventDefault();const index=Number((document.activeElement as HTMLElement)?.dataset.radialIndex??-1);radialView?.focus(moveSelection(index,5,e.key));return true;}
+  if(e.key==='Escape'){e.preventDefault();void showRadial(true);return true;}
+ }return false;
+}
 const groups=()=>categoryGroups(city().items);
 const groupShortcut=(name:string)=>prefs.bindings[prefs.city]?.['category:'+name] ?? categoryShortcut(groups().findIndex((g:any)=>g.name===name),prefs.prefix);
 const shortcutLabel = () => prefs.prefix === 'Control+Shift' ? 'Ctrl + Shift' : 'Alt + Shift';
@@ -101,7 +160,7 @@ function dragFreeWindow(start:PointerEvent,target:HTMLElement){
 }
 function setupFreeDragging(){
  document.addEventListener('pointerdown',e=>{if(!native||e.button!==0||e.defaultPrevented)return;const target=e.target as HTMLElement;if(target.closest('#dragbar'))return;const tag=target.tagName.toLowerCase();const interactive=Boolean(target.closest('button,input,select,textarea,a,summary,[role="switch"],[role="tab"],label'));
- const heading=Boolean(target.closest('.settings-heading'));const surfaces=['shell','workspace','intro','tabs','filter-row','content-page','plugins-empty','no-active-menu','chat-transcript','settings-body','setting-card','plugins-page-top'];
+ const heading=Boolean(target.closest('.settings-heading'));const surfaces=['shell','workspace','intro','tabs','filter-row','content-page','plugins-empty','no-active-menu','chat-transcript','settings-body','setting-card','plugins-page-top','radial-hub'];
  const rect=target.getBoundingClientRect();const scrollbar=(target.scrollHeight>target.clientHeight&&e.clientX>=rect.left+target.clientWidth)||(target.scrollWidth>target.clientWidth&&e.clientY>=rect.top+target.clientHeight);
  if(!dragSurface({interactive,heading,blank:(target===root||tag==='footer'||surfaces.some(c=>target.classList.contains(c)))&&['div','section','main','nav','footer'].includes(tag),scrollbar}))return;
  e.preventDefault();dragFreeWindow(e,target);
@@ -167,6 +226,7 @@ function showPage(page:typeof activePage,searchOverride=false){
 }
 function closeSearch(){$('search-panel').hidden=true;query='';$<HTMLInputElement>('search').value='';renderList();showPage(activePage);}
 async function openSearch(){
+ if(radialShown)await leaveRadial();
  if(pdfBusy)return;if(chatOpen)await closeChat();if(pickerActive)await closeCategory();
  document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());await setCompact(false);showPage('divergences',true);$('search-panel').hidden=false;
  if(native){await getCurrentWindow().show();await getCurrentWindow().unminimize();await getCurrentWindow().setFocus();}$('search').focus();
@@ -210,6 +270,7 @@ async function copyText(text:string) {
 }
 async function choose(item:Item){await copyText(directText(item.text));}
 async function setCompact(value:boolean) {
+  if(radialShown&&!radialPicker){await showRadial(value);return;}
   if(value && document.querySelector('dialog[open]'))return;
   compact=value;root.classList.toggle('compact',compact);
   if(native) {
@@ -284,6 +345,7 @@ async function boot() {
       if(saved.welcomeCache&&typeof saved.welcomeCache.key==='string'&&saved.welcomeCache.key.length<1000&&typeof saved.welcomeCache.text==='string'&&saved.welcomeCache.text.length<=180)prefs.welcomeCache={key:saved.welcomeCache.key,text:welcomeText(saved.welcomeCache.text)};
       if(typeof saved.welcomeAttempt==='string'&&saved.welcomeAttempt.length<1000)prefs.welcomeAttempt=saved.welcomeAttempt;
       if(Number.isFinite(saved.lastPosition?.x)&&Number.isFinite(saved.lastPosition?.y))prefs.lastPosition=saved.lastPosition;
+      if(typeof saved.radialCompact==='boolean')prefs.radialCompact=saved.radialCompact;
       if(saved.bindings&&typeof saved.bindings==='object')for(const c of catalog){const entries=saved.bindings[c.id];if(entries&&typeof entries==='object')prefs.bindings[c.id]=Object.fromEntries(Object.entries(entries).filter(([key,value])=>key.startsWith('category:')&&c.items.some(i=>'category:'+i.category===key)&&typeof value==='string'&&value.length<80) as [string,string][]);}
       for(const k of ['assistant','sound','pinned','hover','shortcuts','smartTransparency','showPickerGuidance','showDivergences','showParameters','autoGreeting','showHelp'] as const) if(typeof saved[k]==='boolean') prefs[k]=saved[k];
       if(!saved.settingsVersion)prefs.sound=true;
@@ -298,14 +360,14 @@ async function boot() {
   if(native&&!updateProbe)systemName=await invoke<string>('display_name').catch(()=>'');
   if(!catalog.some(c=>c.id===prefs.city))prefs.city=catalog[0]?.id||'';
   refreshCities();
-  setupEnhancements();setupHelp();setupSettingsNavigation();renderPluginsPage($('plugins-content'));
+  setupEnhancements();setupHelp();setupSettingsNavigation();
   setInterval(refreshGreeting,60000);
   setCity();applyLook();updateCopyMode();
   $('city').onchange=()=>{prefs.city=$<HTMLSelectElement>('city').value;setCity();void configureKeys();save();};
   $('search').oninput=()=>{query=$<HTMLInputElement>('search').value;renderList();};
   $('copy-mode').onclick=()=>{prefs.copyMode=prefs.copyMode==='paste'?'copy':'paste';updateCopyMode();renderList();save();};
   $('category').onchange=()=>{category=$<HTMLSelectElement>('category').value;renderList();};
-  $('all').onclick=()=>showPage('divergences');$('parameters-tab').onclick=()=>showPage('parameters');$('plugins-tab').onclick=()=>showPage('plugins');$('plugins-back').onclick=()=>showPage('divergences');$('close-search').onclick=closeSearch;
+  $('all').onclick=()=>showPage('divergences');$('parameters-tab').onclick=()=>showPage('parameters');$('plugins-tab').onclick=()=>showPage('plugins');$('plugins-back').onclick=()=>{if(radialLayout)void showRadial(false);else showPage('divergences');};$('close-search').onclick=closeSearch;$('radial-return').onclick=()=>{document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());void showRadial(false);};
   $('settings').onclick=()=>openSettings();$('about').onclick=()=>$<HTMLDialogElement>('info').showModal();
   document.querySelectorAll<HTMLButtonElement>('.dismiss').forEach(b=>b.onclick=()=>b.closest('dialog')!.close());
   $('collapse').onclick=()=>void setCompact(true);$('expand').onclick=()=>void setCompact(false);
@@ -331,7 +393,7 @@ async function boot() {
   $('dragbar').ondblclick=e=>{if(!native&&!(e.target as HTMLElement).closest('button'))void dock(true);};
   $('mascot').onclick=()=>{if(aiConnected)void openChat();else engine.slap();};
   $('mascot').onmouseenter=()=>engine.triggerEmote('love');
-  const pointAt=(x:number,y:number)=>{const box=$('mascot').getBoundingClientRect();lookTarget={x:Math.tanh((x-box.x-box.width/2)/300),y:-Math.tanh((y-box.y-box.height/2)/300)};};
+  const pointAt=(x:number,y:number)=>{const box=$('mascot').getBoundingClientRect();lookTarget={x:Math.tanh((x-box.x-box.width/2)/300),y:Math.tanh((y-box.y-box.height/2)/300)};};
   if(native)await listen<[number,number]>('janus-cursor',({payload})=>pointAt(payload[0],payload[1]));
   else document.addEventListener('pointermove',e=>pointAt(e.clientX,e.clientY));
   let foldTimer=0;
@@ -339,6 +401,9 @@ async function boot() {
   root.onmouseleave=()=>{if(!prefs.pinned&&prefs.hover&&!compact&&!chatOpen&&!pickerActive&&!document.querySelector('dialog[open]'))foldTimer=window.setTimeout(()=>void setCompact(true),700);};
   document.addEventListener('visibilitychange',()=>{applyLook();});
   document.addEventListener('keydown',e=>{
+    if(!native&&e.ctrlKey&&e.shiftKey&&/^Digit[0-9]$/.test(e.code)){const number=Number(e.code.slice(5)),group=groups()[number===0?9:number-1];if(group){e.preventDefault();void requestCategory(group.name);return;}}
+    if(!native&&e.ctrlKey&&e.shiftKey&&e.code==='KeyD'){e.preventDefault();void togglePanel();return;}
+    if(radialKeys(e))return;
     if(e.ctrlKey&&e.shiftKey&&e.code==='Space'){e.preventDefault();void openChat();return;}
     if(!native&&e.ctrlKey&&e.shiftKey&&e.code==='KeyD'){e.preventDefault();void togglePanel();return;}
     if(!native&&e.ctrlKey&&e.shiftKey&&/^Digit[0-9]$/.test(e.code)){e.preventDefault();const n=Number(e.code.slice(-1));const g=groups()[n===0?9:n-1];if(g&&!e.repeat)void requestCategory(g.name);return;}
@@ -358,6 +423,7 @@ async function boot() {
     });
     await dock(false);
     await getCurrentWindow().onMoved(({payload:p})=>{if(movingProgrammatically)return;clearTimeout(moveTimer);moveTimer=window.setTimeout(()=>{prefs.lastPosition={x:p.x,y:p.y};save();},200);});
+    await getCurrentWindow().onScaleChanged(()=>{if(radialShown&&radialFrame)void sizeRadial(radialFrame,true);});
   }
   if(!updateProbe)setupAI();
   document.addEventListener('contextmenu',e=>e.preventDefault());
@@ -365,7 +431,7 @@ async function boot() {
   void setupLogo($<HTMLCanvasElement>('logo')).catch(()=>toast('Não foi possível carregar a animação.',true));
   $('logo').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('logo').click();}};
   if(!updateProbe)await configureKeys();applyLook();engine.greet();if(!updateProbe)save();
-  if(updateProbe)await invoke('update_healthy');else void setupUpdater(native);
+  if(updateProbe)await invoke('update_healthy');else{await setupPluginsPage($('plugins-content'),native,changePlugin);void setupUpdater(native);}
 }
 function validCity(value:any):value is City {return validProject(value);}
 function updateCopyMode(){const copying=prefs.copyMode==='copy';$('copy-mode').setAttribute('aria-checked',String(!copying));$('copy-mode').setAttribute('aria-label',copying?'Modo C: apenas copiar. Alternar para colar.':'Modo V: copiar e colar diretamente. Alternar para apenas copiar.');$('copy-mode').title=copying?'C · Apenas copia o texto para a área de transferência (Ctrl + C). Clique para usar V.':'V · Copia e cola o texto no aplicativo anterior (Ctrl + V). Clique para usar C.';}
@@ -469,6 +535,7 @@ let pickerReturnCompact=false,pickerActive=false,pickerIndex=0,pickerItems:Item[
 function requestCategory(name:string){categoryQueue=categoryQueue.then(()=>openCategory(name)).catch(()=>toast('Não foi possível abrir a divergência.',true));return categoryQueue;}
 async function togglePanel(){
   if(chatOpen)await closeChat();
+  if(radialLayout){if(pdfBusy){toast('Aguarde a leitura do PDF.');return;}if(pickerActive)await closeCategory();document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());await showRadial(radialShown?!compact:false);if(native){await getCurrentWindow().unminimize();await getCurrentWindow().setFocus();}return;}
   if(native&&await getCurrentWindow().isMinimized()){await getCurrentWindow().unminimize();await setCompact(false);await getCurrentWindow().setFocus();return;}
   if(pdfBusy){toast('Aguarde a leitura do PDF.');return;}
   if(pickerActive){await closeCategory();await setCompact(true);return;}
@@ -477,14 +544,16 @@ async function togglePanel(){
   if(!compact){if(native){await getCurrentWindow().unminimize();await getCurrentWindow().setFocus();}$('all').focus();}
 }
 async function closeCategory(){
+  if(radialPicker){pickerActive=false;pickerName='';radialPicker=false;root.classList.remove('picking');if(pickerReturnRadial)await showRadial(pickerReturnCompact);else{await leaveRadial();await setCompact(pickerReturnCompact);}renderList();return;}
   $<HTMLDialogElement>('category-picker').close();pickerActive=false;pickerName='';root.classList.remove('picking');await setCompact(pickerReturnCompact);renderList();
 }
 async function openCategory(name:string){
   $<HTMLDialogElement>('guidance-menu').close();const action=pickerAction(pickerActive?pickerName:'',name);if(action==='close'){await closeCategory();return;}
   if(!pickerActive&&document.querySelector('dialog[open]'))return;
   if(chatOpen)await closeChat();
-  Sound.play('open');if(!pickerActive)pickerReturnCompact=compact;pickerActive=true;pickerName=name;pickerItems=city().items.filter(i=>i.category===name);pickerIndex=0;
+  Sound.play('open');if(!pickerActive){pickerReturnCompact=compact;pickerReturnRadial=radialShown;}pickerActive=true;pickerName=name;pickerItems=city().items.filter(i=>i.category===name);pickerIndex=0;
   root.classList.add('picking');$('picker-title').textContent=`${groups().findIndex((g:any)=>g.name===name)+1}. ${name}`;
+  if(radialLayout&&radialView){radialShown=true;radialPicker=true;compact=false;root.classList.add('radial-mode');root.classList.remove('compact');paintRadialPicker(true);await radialSizing;if(native){await getCurrentWindow().unminimize();await getCurrentWindow().setFocus();}return;}
   const list=$('picker-options');list.replaceChildren();const note=categoryNote(name);$('picker-guidance').replaceChildren(guidanceBody(note));
   refreshPickerGuidance();$('picker-action-hint').textContent=`↑ ↓ para escolher · Enter para ${prefs.copyMode==='paste'?'colar':'copiar'} · Esc para voltar`;
   pickerItems.forEach((item,index)=>{const button=document.createElement('button');button.textContent=directText(item.text);button.className='picker-option';button.setAttribute('role','option');button.onclick=()=>void pick(index);button.onfocus=()=>{pickerIndex=index;highlightPicker();};list.append(button);});
@@ -551,6 +620,7 @@ function scrollConversation(){const log=$('chat-transcript');log.scrollTop=log.s
 function renderConversation(){const list=$('chat-messages');list.replaceChildren();for(const message of conversation()){const bubble=document.createElement('div');bubble.className=`chat-message chat-message-${message.role}`;const label=document.createElement('span');label.className='chat-author';label.textContent=message.role==='user'?'Você':message.role==='error'?'Não foi possível responder':'Janus';const text=document.createElement('p');text.textContent=message.text;bubble.append(label,text);list.append(bubble);}$('chat-welcome').hidden=conversation().length>0;$<HTMLButtonElement>('clear-chat').disabled=aiBusy||!conversation().length;scrollConversation();}
 let chatOpen=false,chatReturnCompact=false;
 async function openChat(){
+ if(radialShown)await leaveRadial();
  if(pdfBusy){toast('Aguarde a leitura do PDF.');return;}
  if(pickerActive)await closeCategory();
  document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach(d=>d.close());
@@ -564,7 +634,7 @@ function syncChatConnection(){
  $<HTMLButtonElement>('ask-ai').disabled=!aiConnected||aiBusy;
 }
 async function closeChat(){if(!chatOpen)return;chatOpen=false;$('janus-chat').hidden=true;root.classList.remove('chatting');Sound.play('close');await setCompact(chatReturnCompact);applyLook();}
-root.querySelector('.shell')!.insertAdjacentHTML('beforeend',`<section id="janus-chat" class="janus-chat" hidden aria-label="Chat do Janus"><div class="chat-toolbar"><button id="close-chat" aria-label="Voltar ao painel">← Voltar ao painel</button><button id="clear-chat" title="Limpar conversa deste projeto">Limpar conversa</button></div><div class="chat-intro"><div class="speech-bubble"><strong>Converse com o Janus</strong><span>Uma ajuda para o seu projeto.</span></div></div><div id="chat-transcript" class="chat-transcript" role="log" aria-label="Conversa" aria-live="polite"><div id="chat-welcome" class="chat-welcome"><h3>Em que posso ajudar?</h3><p>Faça uma pergunta, peça uma explicação ou converse sobre o projeto.</p><p class="small">A conversa fica disponível enquanto o Janus estiver aberto.</p></div><p id="chat-disconnected" class="small">Conecte um agente IA nas configurações para enviar mensagens.</p><button id="chat-connect" class="connect-chat">Conectar agente IA</button><div id="chat-messages"></div><div id="thinking" class="thinking" role="status" aria-label="Janus está pensando" hidden><span></span><span></span><span></span></div></div><div class="chat-compose"><label class="field-label" for="ai-question">SUA MENSAGEM</label><textarea id="ai-question" rows="2" maxlength="10000" placeholder="Escreva sua mensagem…"></textarea><div class="chat-compose-actions"><small data-help>Enter envia · Shift + Enter pula linha</small><button class="primary" id="ask-ai">Enviar ↑</button></div></div><label class="chat-context"><input type="checkbox" id="ai-context"> Incluir divergências e parâmetros do projeto</label><p class="chat-privacy">Ao enviar, sua mensagem, as últimas mensagens da conversa e o conteúdo marcado vão para o provedor de IA conectado.</p><span class="app-version chat-version">Janus 1.0a.1</span></section>`);
+root.querySelector('.shell')!.insertAdjacentHTML('beforeend',`<section id="janus-chat" class="janus-chat" hidden aria-label="Chat do Janus"><div class="chat-toolbar"><button id="close-chat" aria-label="Voltar ao painel">← Voltar ao painel</button><button id="clear-chat" title="Limpar conversa deste projeto">Limpar conversa</button></div><div class="chat-intro"><div class="speech-bubble"><strong>Converse com o Janus</strong><span>Uma ajuda para o seu projeto.</span></div></div><div id="chat-transcript" class="chat-transcript" role="log" aria-label="Conversa" aria-live="polite"><div id="chat-welcome" class="chat-welcome"><h3>Em que posso ajudar?</h3><p>Faça uma pergunta, peça uma explicação ou converse sobre o projeto.</p><p class="small">A conversa fica disponível enquanto o Janus estiver aberto.</p></div><p id="chat-disconnected" class="small">Conecte um agente IA nas configurações para enviar mensagens.</p><button id="chat-connect" class="connect-chat">Conectar agente IA</button><div id="chat-messages"></div><div id="thinking" class="thinking" role="status" aria-label="Janus está pensando" hidden><span></span><span></span><span></span></div></div><div class="chat-compose"><label class="field-label" for="ai-question">SUA MENSAGEM</label><textarea id="ai-question" rows="2" maxlength="10000" placeholder="Escreva sua mensagem…"></textarea><div class="chat-compose-actions"><small data-help>Enter envia · Shift + Enter pula linha</small><button class="primary" id="ask-ai">Enviar ↑</button></div></div><label class="chat-context"><input type="checkbox" id="ai-context"> Incluir divergências e parâmetros do projeto</label><p class="chat-privacy">Ao enviar, sua mensagem, as últimas mensagens da conversa e o conteúdo marcado vão para o provedor de IA conectado.</p><span class="app-version chat-version">Janus 1.0a.2</span></section>`);
 root.insertAdjacentHTML('afterend',`
 <dialog id="guidance-menu" aria-labelledby="guidance-title"><div class="dialog-top"><h2 id="guidance-title"></h2><button class="icon dismiss" aria-label="Fechar orientações da categoria">×</button></div><div id="guidance-content"></div></dialog>
 <dialog id="category-picker"><div class="dialog-top"><span class="eyebrow">ESCOLHA A DIVERGÊNCIA</span><button id="close-picker" class="icon" aria-label="Fechar opções">×</button></div><h2 id="picker-title"></h2><button id="toggle-picker-guidance" class="picker-guidance-toggle" aria-controls="picker-guidance">Ocultar orientações</button><div id="picker-guidance"></div><p id="picker-action-hint" class="small" data-help>↑ ↓ para escolher · Enter para colar · Esc para voltar</p><div id="picker-options" role="listbox" aria-label="Opções da divergência"></div></dialog>
