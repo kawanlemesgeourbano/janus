@@ -1,0 +1,3 @@
+License: https://www.mozilla.org/media/MPL/2.0/index.txt
+Unmodified source: https://github.com/servo/stylo/tree/572ecba2d1600e7c3d490586692a209faf703baa/selectors
+Published crate: https://crates.io/crates/selectors/0.38.0
