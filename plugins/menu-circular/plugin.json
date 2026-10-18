@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "id": "menu-circular",
+  "kind": "layout.radial",
+  "name": "Menu circular",
+  "description": "Um menu em leque no canto da tela, com atalhos e seleção circular das divergências.",
+  "permissions": ["interface.layout"],
+  "palette": {
+    "paper": "#f4f0e7",
+    "hub": "#bacbd6",
+    "ink": "#253e50",
+    "accent": "#62899f"
+  },
+  "slots": [
+    {"action": "divergences", "label": "Divergências", "detail": "Consultar e copiar", "icon": "warning"},
+    {"action": "parameters", "label": "Parâmetros", "detail": "Critérios do projeto", "icon": "parameters"},
+    {"action": "plugins", "label": "Plugins+", "detail": "Personalize o Janus", "icon": "plugins"},
+    {"action": "agent", "label": "Agente IA", "detail": "Conversar com o Janus", "icon": "agent"},
+    {"action": "settings", "label": "Configurações", "detail": "Do seu jeito", "icon": "settings"}
+  ]
+}
