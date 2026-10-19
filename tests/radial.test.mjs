@@ -49,3 +49,11 @@ test('main fan meets the central axis with narrow consistent gaps',()=>{
   assert.ok(Math.hypot(a[0]-b[0],a[1]-b[1])<5);
  }
 });
+
+test('hover open and close keep the native window and hub stationary',()=>{
+ for(const left of [false,true]){
+  const expanded=orient(RADIAL,left),compact=orient(COMPACT,left);
+  for(const property of ['width','height','cx','cy','hub'])assert.equal(compact[property],expanded[property]);
+  assert.deepEqual(circle(compact),circle(expanded));
+ }
+});

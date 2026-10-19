@@ -4,7 +4,7 @@ Plugins+ oferece download, ativação, desativação e remoção. Nenhum plugin 
 
 ## Primeiro plugin: Menu circular
 
-Abre um menu em leque com divergências, parâmetros, Plugins+, agente IA e configurações. O Janus continua desenhando seu próprio personagem e logo. Todas as funções permanecem no modo circular. O centro se amplia para listas, parâmetros, Plugins+, chat e configurações; o botão Menu circular retorna ao início. Ao abrir uma função, os demais setores desaparecem.
+Abre um menu em leque com divergências, parâmetros, Plugins+, agente IA e configurações. O Janus continua desenhando seu próprio personagem e logo. Todas as funções permanecem no modo circular. O centro se amplia para listas, parâmetros, Plugins+, chat e configurações; um único botão Voltar, destacado à esquerda, retorna ao início. Ao abrir uma função, os demais setores desaparecem.
 
 - **Ctrl + Shift + D:** abrir/recolher o menu circular.
 - **1 a 5, com o menu em foco:** abrir uma das cinco funções.
@@ -37,3 +37,7 @@ Publique o pacote assinado no caminho do catálogo oficial somente depois de tes
 - **×** encerra; o alfinete abaixo do logo fixa sobre as outras janelas. **Ctrl + Shift + D** continua abrindo/recolhendo o círculo.
 - Todas as páginas ficam no círculo ampliado, com rolagem no conteúdo e uma única cabeça do assistente. Trocar de função não desativa o plugin.
 - Quem já instalou o Menu circular recebe os ajustes de apresentação ao atualizar o Janus; não precisa reinstalar o pacote do plugin.
+
+A abertura e o recolhimento usam a mesma janela e mantêm o centro imóvel. Os efeitos sonoros respeitam a preferência Sons do Janus. O setor Agente IA mostra o nome do provedor/modelo conectado quando houver conexão.
+
+![Configurações dentro da área segura do círculo](images/configuracoes-circulares.png)

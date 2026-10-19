@@ -1,6 +1,6 @@
 export const RADIAL={width:450,height:560,cx:310,cy:280,hub:128,inner:134,outer:260};
 export const WORKSPACE={width:500,height:540,cx:250,cy:270,hub:238,inner:236,outer:238};
-export const COMPACT={width:272,height:288,cx:136,cy:144,hub:128,inner:132,outer:258};
+export const COMPACT={...RADIAL};
 export const PICKER={width:550,height:560,cx:405,cy:280,hub:138,inner:150,outer:258};
 export const PAGE_SIZE=5;
 const point=(cx,cy,r,degrees)=>[cx+r*Math.cos(degrees*Math.PI/180),cy+r*Math.sin(degrees*Math.PI/180)];

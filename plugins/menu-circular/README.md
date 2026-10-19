@@ -22,3 +22,5 @@ Personagem, animações e sons continuam sendo os próprios do Janus. A imagem d
 - **×** encerra; o alfinete abaixo do logo fixa sobre as outras janelas. **Ctrl + Shift + D** continua abrindo/recolhendo o círculo.
 - Todas as páginas ficam no círculo ampliado, com rolagem no conteúdo e uma única cabeça do assistente. Trocar de função não desativa o plugin.
 - Quem já instalou o Menu circular recebe os ajustes de apresentação ao atualizar o Janus; não precisa reinstalar o pacote do plugin.
+
+A abertura e o recolhimento usam a mesma janela e mantêm o centro imóvel. Os efeitos sonoros respeitam a preferência Sons do Janus. O setor Agente IA mostra o nome do provedor/modelo conectado quando houver conexão.

@@ -6,10 +6,11 @@ const icons:Record<string,string>={warning:'<path d="M12 3 2 21h20z"/><path d="M
 const svgIcon=(name:string)=>`<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icons[name]||icons.plugins}</svg>`;
 export class RadialView{
  readonly element:HTMLElement;
- constructor(private root:HTMLElement,private layout:Layout,private left=false){
+ constructor(private root:HTMLElement,private layout:Layout,private left=false,private agentName='Agente IA'){
   this.element=document.createElement('section');this.element.id='radial-root';this.element.className='radial-surface';this.element.setAttribute('aria-label','Menu circular do Janus');root.querySelector('.shell')!.append(this.element);
   for(const [key,color] of Object.entries(layout.palette))root.style.setProperty('--radial-'+key,color);
  }
+ setAgentName(name:string){this.agentName=name;const index=this.layout.slots.findIndex(s=>s.action==='agent'),button=this.element.querySelector<HTMLButtonElement>(`[data-radial-index="${index}"]`);if(button&&this.element.dataset.mode==='home'){button.setAttribute('aria-label',name);button.querySelector('strong')!.textContent=name;}}
  destroy(){this.element.remove();}
  private base(compact=false,picking=false,workspace=false){
   const mode=picking?'picker':compact?'compact':workspace?'workspace':'home';this.element.classList.toggle('radial-enter',this.element.dataset.mode!==mode);this.element.dataset.mode=mode;this.element.replaceChildren();const geometry:Geometry=orient(picking?PICKER:compact?COMPACT:workspace?WORKSPACE:RADIAL,this.left);
@@ -32,15 +33,15 @@ export class RadialView{
  }
  main(compact:boolean,_counts:{divergences:number;parameters:number},action:(name:string)=>void,workspace=false,_route=''):RadialFrame{
   const frame=this.base(compact,false,workspace);this.element.setAttribute('aria-label',compact?'Janus circular recolhido':'Menu circular do Janus');
-  if(!compact&&!workspace)this.petals(this.layout.slots.map(slot=>({title:slot.label,detail:'',icon:slot.icon,number:'',click:()=>action(slot.action)})),frame);
-  if(workspace){const back=document.createElement('button');back.className='radial-home';back.textContent='← Menu circular';back.onclick=()=>action('home');frame.hub.append(back);return frame;}
+  if(!compact&&!workspace)this.petals(this.layout.slots.map(slot=>({title:slot.action==='agent'?this.agentName:slot.label,detail:'',icon:slot.icon,number:'',click:()=>action(slot.action)})),frame);
+  if(workspace){const back=document.createElement('button');back.className='radial-home';back.textContent='← Voltar';back.setAttribute('aria-label','Voltar');back.onclick=()=>action('home');frame.hub.append(back);return frame;}
   return frame;
  }
  picker(options:{title:string;items:{text:string}[];index:number;note:string;guidance:boolean;copyMode:string;pick:(index:number)=>void;select:(index:number)=>void;close:()=>void;toggleGuidance:()=>void}):RadialFrame{
   const frame=this.base(false,true),page=pickerPage(options.items.length,options.index);this.element.setAttribute('aria-label','Selecionar divergência no menu circular');
   this.petals(options.items.slice(page.start,page.end).map((item,offset)=>{const index=page.start+offset;return {title:brief(item.text),detail:'Clique para '+(options.copyMode==='paste'?'colar':'copiar'),number:String(index+1),selected:index===options.index,click:()=>options.pick(index),focus:()=>options.select(index)};}),frame);
   const preview=document.createElement('div');preview.className='radial-preview';
-  const top=document.createElement('div');top.className='radial-preview-top';const label=document.createElement('small');label.textContent=options.title;const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','Fechar opções da divergência');close.onclick=options.close;top.append(label,close);
+  const top=document.createElement('div');top.className='radial-preview-top';const label=document.createElement('small');label.textContent=options.title;const close=document.createElement('button');close.textContent='←';close.className='radial-picker-back';close.setAttribute('aria-label','Voltar');close.onclick=options.close;top.append(close,label);
   const full=document.createElement('p');full.className='radial-full-text';full.textContent=options.items[options.index]?.text||'Nenhuma opção disponível.';full.setAttribute('aria-live','polite');
   const copy=document.createElement('button');copy.className='radial-confirm';copy.textContent=(options.copyMode==='paste'?'Colar':'Copiar')+' · Enter';copy.disabled=!options.items.length;copy.onclick=()=>options.pick(options.index);
   const orientation=document.createElement('button');orientation.className='radial-guidance-toggle';orientation.textContent=options.guidance?'Ocultar orientação':'Mostrar orientação';orientation.setAttribute('aria-expanded',String(options.guidance));orientation.onclick=options.toggleGuidance;
