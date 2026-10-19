@@ -1,5 +1,7 @@
 # Plugins opcionais
 
+Para desenvolver, consulte o **[Guia completo para pessoas e modelos de IA](CRIAR-PLUGINS.md)**, com exemplo importável, tecnologias, limites e instruções de contribuição pelo GitHub. Para instalação e uso, continue abaixo.
+
 Plugins+ oferece download, ativação, desativação e remoção. Nenhum plugin é instalado automaticamente com o Janus. A escolha é salva separadamente dos projetos em `dados/plugins` e continua igual ao trocar de projeto. Não há seleção de versões na interface.
 
 ## Primeiro plugin: Menu circular

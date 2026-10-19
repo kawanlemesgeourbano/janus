@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "menu-circular",
+  "kind": "layout.radial",
+  "name": "Menu circular · Azul suave",
+  "description": "Exemplo importável: personaliza a paleta e os títulos das cinco ações existentes.",
+  "permissions": [
+    "interface.layout"
+  ],
+  "palette": {
+    "paper": "#f1f5f8",
+    "hub": "#bdd3e0",
+    "ink": "#203e54",
+    "accent": "#4d809c"
+  },
+  "slots": [
+    {
+      "action": "divergences",
+      "label": "Divergências",
+      "detail": "Consultar e copiar",
+      "icon": "warning"
+    },
+    {
+      "action": "parameters",
+      "label": "Consultar parâmetros",
+      "detail": "Critérios do projeto",
+      "icon": "parameters"
+    },
+    {
+      "action": "plugins",
+      "label": "Plugins+",
+      "detail": "Personalize o Janus",
+      "icon": "plugins"
+    },
+    {
+      "action": "agent",
+      "label": "Agente IA",
+      "detail": "Conversar com o Janus",
+      "icon": "agent"
+    },
+    {
+      "action": "settings",
+      "label": "Configurações",
+      "detail": "Do seu jeito",
+      "icon": "settings"
+    }
+  ]
+}

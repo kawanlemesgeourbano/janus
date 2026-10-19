@@ -40,6 +40,14 @@ Use **Plugins+ → Desativar** para voltar ao painel original, ou **Remover** pa
 
 [Conheça o plugin no GitHub](plugins/menu-circular/README.md) · [Formato e funcionamento](docs/PLUGINS.md)
 
+## Criar plugins e contribuir
+
+O [Guia para desenvolvedores e modelos de IA](docs/CRIAR-PLUGINS.md) reúne tecnologias, arquitetura, contratos, limites, exemplos e um pedido pronto para enviar a uma IA. O arquivo é autossuficiente para criar um layout importável e explica quando uma função nova precisa de suporte no código do Janus.
+
+[Baixar o guia em Markdown](https://raw.githubusercontent.com/kawanlemesgeourbano/janus/main/docs/CRIAR-PLUGINS.md) · [Como contribuir pelo GitHub](CONTRIBUTING.md) · [Exemplo de layout importável](plugins/examples/menu-azul.json)
+
+Valide um descritor antes de importar: `node scripts/validate-plugin.mjs plugins/examples/menu-azul.json`. O comando usa os validadores do aplicativo e não exige chave privada. O Janus ainda não carrega código externo arbitrário; o guia distingue personalização declarativa e novas capacidades implementadas no host.
+
 ## Dados dos projetos
 
 Esta distribuição começa vazia. Não inclui projetos, critérios de contratos, documentos de clientes nem credenciais. Use **+** para cadastrar um projeto ou importar seu PDF. Revise os textos e orientações extraídos antes de utilizá-los.
