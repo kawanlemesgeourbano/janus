@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {FONT_ROLES,parseFontPlugin,verifyFontPlugin,validateFontFile} from '../src/font-model.mjs';
+import {FONT_ROLES,parseFontPlugin,verifyFontPlugin,validateFontFile,encodeFont,decodeFont} from '../src/font-model.mjs';
 const descriptor=JSON.parse(readFileSync(new URL('../plugins/fontes/plugin.json',import.meta.url)));
 const envelope=JSON.parse(readFileSync(new URL('../plugins/fontes/fontes.janus-plugin.json',import.meta.url)));
 const key=readFileSync(new URL('../src-tauri/updater-public-key.hex',import.meta.url),'utf8');
@@ -20,3 +20,5 @@ test('font uploads accept supported headers and reject renamed executables or ex
  assert.throws(()=>validateFontFile('grande.ttf',new Uint8Array(10*1024*1024+1)));
  assert.throws(()=>validateFontFile('curta.ttf',new Uint8Array(4)));
 });
+
+test('portable font storage preserves bytes and rejects malformed records',()=>{const bytes=readFileSync(new URL('../public/fonts/Oxanium.ttf',import.meta.url));assert.deepEqual(decodeFont(encodeFont(bytes)),new Uint8Array(bytes));for(const data of ['abc','xy','',null])assert.throws(()=>decodeFont(data));});

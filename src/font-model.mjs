@@ -16,3 +16,6 @@ export function validateFontFile(name,bytes){
  const header=Array.from(bytes.slice(0,4));const tag=String.fromCharCode(...header);
  if(bytes.length<12||!(['OTTO','wOFF','wOF2','true'].includes(tag)||header.join(',')==='0,1,0,0'))throw Error('Use um arquivo TTF, OTF, WOFF ou WOFF2 válido.');
 }
+
+export function encodeFont(bytes){const chunks=[];for(let offset=0;offset<bytes.length;offset+=16384)chunks.push(Array.from(bytes.subarray(offset,offset+16384),b=>b.toString(16).padStart(2,'0')).join(''));return chunks.join('');}
+export function decodeFont(data){if(typeof data!=='string'||data.length===0||data.length%2||data.length>20*1024*1024||/[^a-f0-9]/i.test(data))throw Error('Fonte salva inválida.');const bytes=new Uint8Array(data.length/2);for(let i=0;i<bytes.length;i++)bytes[i]=parseInt(data.slice(i*2,i*2+2),16);return bytes;}

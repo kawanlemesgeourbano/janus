@@ -22,6 +22,8 @@ Plugins+ oferece uma lista compacta e importação manual de layouts JSON compat
 
 ## Fontes · plugin opcional
 
+<img src="docs/images/fontes.png" alt="Aba Fontes com seletores para título, subtítulo e texto corrido" width="300">
+
 Em **Plugins+ → Fontes → Baixar**, a aba **Fontes** aparece nas configurações. Selecione um arquivo para títulos, outro para subtítulos e outro para texto corrido. Os formatos aceitos são TTF, OTF, WOFF e WOFF2, até 10 MB por arquivo.
 
 As fontes ficam salvas junto ao Janus e se aplicam a todos os projetos. **Restaurar padrão** desfaz uma escolha. Desativar o plugin recupera as fontes padrão sem perder as escolhas; remover exclui as fontes salvas por ele. Os arquivos escolhidos ficam somente no computador.

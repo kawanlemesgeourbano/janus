@@ -86,3 +86,7 @@ h3,h4,.field-label,.eyebrow,.tabs button,.settings-nav button,.city-row label{fo
 h1 *,h2 *{font-family:var(--font-title)!important}
 h3 *,h4 *{font-family:var(--font-subtitle)!important}
 #font-plugin-card{flex-shrink:0;min-width:0}
+
+:root{font-synthesis:weight style}
+
+.radial-petal-copy strong{font-family:var(--font-subtitle)!important}
