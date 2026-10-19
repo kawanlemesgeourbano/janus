@@ -4,13 +4,13 @@ Assistente portátil para Windows: consulta de divergências e parâmetros, atal
 
 ## Baixar Janus
 
-[**⬇ Baixar Janus para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.6/Janus-Windows-portatil.zip)
+[**⬇ Baixar Janus para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.7/Janus-Windows-portatil.zip)
 
 Extraia o ZIP em uma pasta onde você possa salvar arquivos e abra **Janus.exe**. Sem instalador e sem execução como administrador. Windows de 64 bits com Microsoft Edge WebView2 disponível.
 
 O programa começa sem projetos cadastrados. Quem usa 1.0a precisa fechar o Janus e substituir o executável uma vez, mantendo a pasta `dados`. Depois, o atualizador verifica novas versões ao abrir, baixa o pacote assinado e aplica ao fechar. Aguarde alguns segundos antes de abrir novamente.
 
-[Detalhes do download e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.6). Esta é uma versão alpha.
+[Detalhes do download e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.7). Esta é uma versão alpha.
 
 ## Painel clássico
 
@@ -19,6 +19,14 @@ O programa começa sem projetos cadastrados. Quem usa 1.0a precisa fechar o Janu
 O Janus acena ao entrar, reage ao mouse e usa sons próprios. Ao sair do mouse, recolhe na posição habitual; ao voltar, expande. O alfinete mantém sobre outras janelas e **Configurações → Janela → Recolher automaticamente** controla esse comportamento separadamente.
 
 Plugins+ oferece uma lista compacta e importação manual de layouts JSON compatíveis. Downloads oficiais mantêm a validação de assinatura. Quando um pacote de atualização estiver pronto, **Atualizar e reabrir** fecha, aplica, valida e abre o programa novamente.
+
+## Fontes · plugin opcional
+
+Em **Plugins+ → Fontes → Baixar**, a aba **Fontes** aparece nas configurações. Selecione um arquivo para títulos, outro para subtítulos e outro para texto corrido. Os formatos aceitos são TTF, OTF, WOFF e WOFF2, até 10 MB por arquivo.
+
+As fontes ficam salvas junto ao Janus e se aplicam a todos os projetos. **Restaurar padrão** desfaz uma escolha. Desativar o plugin recupera as fontes padrão sem perder as escolhas; remover exclui as fontes salvas por ele. Os arquivos escolhidos ficam somente no computador.
+
+[Como usar o plugin de fontes](plugins/fontes/README.md)
 
 ## Menu circular · plugin opcional
 
@@ -53,7 +61,7 @@ O executável fica em `src-tauri/target/release/janus.exe`. Distribua somente o 
 
 Personagem geométrico próprio em `src/avatar.ts`, sons sintetizados em `src/core/sound.ts`. Os recursos restritos do Coucou não estão incluídos. Logos Janus e GI fornecidas pelo responsável pelo projeto. Fontes com licenças em `public/fonts`.
 
-O [atualizador portátil](docs/UPDATES.md) está disponível a partir de 1.0a.1. Configurações > Geral permite verificar agora ou desativar a busca automática. Plugins+ oferece o primeiro [plugin de interface opcional](docs/PLUGINS.md). Outros tipos de integração continuam em planejamento.
+O [atualizador portátil](docs/UPDATES.md) está disponível a partir de 1.0a.1. Configurações > Geral permite verificar agora ou desativar a busca automática. Plugins+ oferece [plugins opcionais de interface](docs/PLUGINS.md). Outros tipos de integração continuam em planejamento.
 
 Base de código: Coucou, de Louis Raillé, sob MIT; aviso preservado em `LICENSE-COUCOU`. Consulte [os créditos](CREDITS.md) e [as condições dos recursos](LICENSE-ASSETS.md).
 

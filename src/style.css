@@ -66,3 +66,23 @@ h3,h4,.field-label,.eyebrow,.tabs button,.settings-nav button,.city-row label{fo
 .radial-mode .workspace .project-tools{display:none}.plugins-open .city-row:has(.project-tools){display:none}
 .plugin-list-row .plugin-card-copy h3{font-size:13px;margin:0 0 5px;line-height:1.3}.plugin-list-row .plugin-card-copy .plugin-state{font-size:10px;line-height:1.4;margin:0}.plugin-list-row.plugin-card{padding:12px;border-radius:12px}
 #preferences .settings-heading{position:relative}#preferences .settings-heading>.dialog-top{position:absolute;right:12px;top:12px;justify-content:flex-end}#preferences .settings-heading h2{padding-right:32px}
+
+/* Optional typography plugin: three portable, semantic font roles. */
+.settings-nav{grid-template-columns:repeat(auto-fit,minmax(66px,1fr))}
+.settings-nav [hidden]{display:none!important}
+.font-help{font-size:12px;line-height:1.6;margin:4px 0 14px}
+.font-choice{padding:12px!important;margin-bottom:10px}
+.font-choice h4{margin:0 0 5px;font-size:13px}
+.font-choice small{display:block;overflow-wrap:anywhere;font-size:11px;opacity:.8}
+.font-controls{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.font-controls button,.font-controls .plugin-import-button{font-size:11px;padding:7px 9px}
+.font-sample{line-height:1.5;overflow-wrap:anywhere;margin:10px 0}
+.font-sample-title{font-family:var(--font-title)!important;font-size:18px;font-weight:700}
+.font-sample-subtitle{font-family:var(--font-subtitle)!important;font-size:15px;font-weight:600}
+.font-sample-body{font-family:var(--font-body)!important;font-size:13px}
+.font-status{font-size:12px;line-height:1.5}
+.group-title,.radial-label{font-family:var(--font-subtitle)!important}
+
+h1 *,h2 *{font-family:var(--font-title)!important}
+h3 *,h4 *{font-family:var(--font-subtitle)!important}
+#font-plugin-card{flex-shrink:0;min-width:0}

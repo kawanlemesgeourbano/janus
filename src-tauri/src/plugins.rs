@@ -52,7 +52,7 @@ fn prepare_local(content:&str)->Result<Vec<u8>,String>{
  Ok(result)
 }
 fn bytes_to_text(bytes:&[u8])->Result<&str,String>{std::str::from_utf8(bytes).map_err(|_|"Use um arquivo JSON UTF-8".into())}
-fn directory()->Result<PathBuf,String>{let exe=std::env::current_exe().map_err(|e|e.to_string())?;let root=exe.parent().ok_or("Pasta indisponível")?.join("dados");normal_file(&root)?;let dir=root.join("plugins");normal_file(&dir)?;fs::create_dir_all(&dir).map_err(|_|"Não foi possível salvar plugins nesta pasta")?;Ok(dir)}
+pub(crate) fn directory()->Result<PathBuf,String>{let exe=std::env::current_exe().map_err(|e|e.to_string())?;let root=exe.parent().ok_or("Pasta indisponível")?.join("dados");normal_file(&root)?;let dir=root.join("plugins");normal_file(&dir)?;fs::create_dir_all(&dir).map_err(|_|"Não foi possível salvar plugins nesta pasta")?;Ok(dir)}
 fn read_status()->Result<Status,String>{
     let dir=directory()?;let file=dir.join("menu-circular.json");normal_file(&file)?;normal_file(&dir.join("state.json"))?;
     let enabled=fs::read(dir.join("state.json")).ok().and_then(|b|serde_json::from_slice::<State>(&b).ok()).unwrap_or_default().enabled;

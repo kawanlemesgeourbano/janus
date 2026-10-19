@@ -51,4 +51,10 @@ O arquivo local não precisa da assinatura do publicador, pois é selecionado di
 
 ## Fontes da interface
 
-Há três propriedades CSS semânticas: `--font-title`, `--font-subtitle` e `--font-body`. As três usam Segoe UI por padrão. Pesos, itálico e tamanho não criam famílias adicionais. Essas propriedades preparam a troca de tipografia por uma futura extensão; o formato de layout atual ainda não pode modificá-las.
+O plugin opcional **Fontes** registra a aba Fontes nas configurações. O pacote oficial separado usa `schema: 1`, `id: fontes`, `kind: settings.fonts` e apenas `permissions: ["interface.typography"]`. A assinatura Ed25519 é obrigatória no download. O plugin é declarativo: não executa código baixado nem acessa projetos.
+
+Há três papéis semânticos: `--font-title`, `--font-subtitle` e `--font-body`, com Segoe UI por padrão. A aba permite importar um arquivo TTF, OTF, WOFF ou WOFF2 de até 10 MB por papel. O carregador valida cabeçalho e carregamento real no motor de fontes antes de substituir a escolha anterior; arquivos inválidos mantêm a fonte anterior. Tamanhos, pesos e itálico continuam definidos pela interface. Logos desenhados em imagem ou canvas não mudam.
+
+A instalação ativa o plugin e exibe a aba imediatamente. Desativar oculta a aba e restaura os padrões temporariamente; reativar recupera as escolhas. Remover apaga somente o pacote, o estado e as três fontes deste plugin. Não afeta Menu circular, projetos ou outras preferências.
+
+No Windows os dados ficam em `dados/plugins/fontes.json`, `fontes-state.json` e `fontes-title.json`, `fontes-subtitle.json`, `fontes-body.json`. Cada arquivo de fonte armazena nome e bytes locais, sem depender do caminho original. Na prévia web, os bytes ficam no IndexedDB. Nenhuma fonte pessoal é enviada ao GitHub ou à IA. O atualizador preserva a pasta dados. A importação manual de layout continua exclusiva ao formato circular; Fontes deve ser instalado pelo botão Baixar.
