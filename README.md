@@ -4,19 +4,19 @@ Assistente portátil para Windows: consulta de divergências e parâmetros, atal
 
 ## Baixar Janus
 
-[**⬇ Baixar Janus para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.3/Janus-Windows-portatil.zip)
+[**⬇ Baixar Janus para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.4/Janus-Windows-portatil.zip)
 
 Extraia o ZIP em uma pasta onde você possa salvar arquivos e abra **Janus.exe**. Sem instalador e sem execução como administrador. Windows de 64 bits com Microsoft Edge WebView2 disponível.
 
 O programa começa sem projetos cadastrados. Quem usa 1.0a precisa fechar o Janus e substituir o executável uma vez, mantendo a pasta `dados`. Depois, o atualizador verifica novas versões ao abrir, baixa o pacote assinado e aplica ao fechar. Aguarde alguns segundos antes de abrir novamente.
 
-[Detalhes do download e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.3). Esta é uma versão alpha.
+[Detalhes do download e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.4). Esta é uma versão alpha.
 
 ## Menu circular · plugin opcional
 
 <img src="docs/images/menu-circular.png" alt="Prévia do menu circular opcional do Janus" width="300">
 
-No Janus, abra **Plugins+ → Menu circular → Baixar plugin → Ativar**. O menu circular e os seletores de cópia passam a usar setores ao redor do centro, com navegação por mouse e teclado. Todas as funções permanecem no círculo ampliado, incluindo chat e configurações. Os setores se revelam ao passar o mouse pelo círculo recolhido; o alfinete, a minimização e os cantos da tela ficam disponíveis no próprio modo.
+No Janus, abra **Plugins+ → Menu circular → Baixar plugin → Ativar**. O menu circular e os seletores de cópia passam a usar setores ao redor do centro, com navegação por mouse e teclado. Todas as funções permanecem no círculo ampliado, incluindo chat e configurações. Os setores exibem apenas ícones e títulos em negrito, surgem ao passar o mouse e recolhem ao sair, mesmo com o alfinete ativo. Ao escolher uma função, as demais opções desaparecem. O fechamento e o alfinete ficam no próprio círculo.
 
 Use **Plugins+ → Desativar** para voltar ao painel original, ou **Remover** para excluir o pacote. Trocar o projeto ativo não altera a ativação do plugin. O download é separado do executável e não é obrigatório.
 

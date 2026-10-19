@@ -63,3 +63,36 @@
 
 .radial-mode.picking .radial-petal-copy strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:43px;font-size:11px}.radial-mode.picking .radial-petal-copy small{font-size:8px}.radial-mode.picking .radial-petal-copy{width:90px;gap:4px}
 .radial-mode.chatting #collapse{display:grid!important}.radial-mode .chat-toolbar #close-chat{display:none}.radial-mode .chat-toolbar{justify-content:flex-end}.radial-mode .chat-welcome{padding:10px 4px;margin:0;min-height:0}.radial-mode .chat-welcome h3{margin:0 0 6px}.radial-mode .chat-welcome p{margin:0;line-height:1.6}.radial-mode .chat-compose textarea{padding:9px;box-sizing:border-box}.radial-mode .chat-message{font-size:11px;line-height:1.6}
+
+/* Compact visual language: one icon, one bold title, a close control and a pin. */
+.radial-mode{padding:0!important;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.radial-mode .radial-hub{border:3px solid #718d9e;background:linear-gradient(145deg,color-mix(in srgb,var(--radial-hub) 90%,white),var(--radial-hub) 64%,#a6bdcb);box-shadow:inset 0 2px 9px #ffffff62,inset 0 -5px 10px #385d7414,0 4px 12px #18374e18;opacity:var(--opacity,1)}
+.radial-hub:before{display:none}
+.radial-shapes path{fill:url(#radial-paper-depth);stroke:#8a9ca6;stroke-width:3;filter:none;shape-rendering:geometricPrecision}
+.radial-shapes path.selected{fill:#dde9ee;stroke:#4a6f87;stroke-width:3}
+.radial-mode .radial-icon svg{width:26px;height:26px;stroke-width:1.9;shape-rendering:geometricPrecision;image-rendering:auto}
+.radial-mode .radial-petal-copy{width:114px;gap:9px;line-height:1.25;white-space:normal}
+.radial-mode .radial-petal-copy strong{font:800 13px/1.3 'Segoe UI',sans-serif;max-width:114px;white-space:normal;overflow-wrap:anywhere;text-wrap:balance}
+.radial-mode .radial-petal-copy kbd,.radial-mode .radial-petal-copy small{display:none!important}
+.radial-mode .window-actions{display:contents}
+.radial-mode .window-actions #collapse,.radial-mode.chatting .window-actions #collapse,.radial-mode .window-actions #expand{display:none!important}
+.radial-mode .window-actions #close,.radial-mode .window-actions #pin{position:absolute;display:grid;place-items:center;width:30px;height:30px;padding:4px;border:0!important;outline-offset:2px;border-radius:0!important;box-shadow:none!important;background:transparent!important;color:#34566d;left:calc(var(--radial-cx) - 15px);top:calc(var(--radial-cy) + 66px);transition:color .2s,opacity .2s}
+.radial-mode .window-actions #close{left:calc(var(--radial-cx) + 65px);top:calc(var(--radial-cy) - 91px);font:400 28px/1 'Segoe UI',sans-serif}
+.radial-mode .window-actions #pin.selected{color:#174b70}.radial-mode .window-actions #pin:not(.selected){opacity:.6}
+.radial-mode .window-actions #close:hover{color:#ac403b}.radial-mode .window-actions #pin:hover{color:#123f5b;opacity:1}
+.radial-mode .radial-gi,.radial-mode .radial-main-hint{display:none!important}
+.radial-mode:not([data-radial-page=home]) .window-actions #close{left:calc(var(--radial-cx) + 160px);top:calc(var(--radial-cy) - 156px)}
+.radial-mode:not([data-radial-page=home]) .window-actions #pin{left:calc(var(--radial-cx) - 15px);top:calc(var(--radial-cy) + 187px)}
+.radial-mode .radial-home{border:2px solid #8ca5b5;background:linear-gradient(#f0f4f5,#dde7ec)}
+.radial-mode dialog[open]{border:2px solid #8ca1af;background:linear-gradient(145deg,#f7f6f0,#eeeee8)}
+.radial-mode .workspace .divergence-group,.radial-mode .workspace .parameter-card,.radial-mode .plugin-card,.radial-mode .chat-transcript{border:2px solid #99aeb9;background:linear-gradient(145deg,#f8f6efee,#e9eeedee)}
+.radial-mode .radial-preview{border-radius:15px}
+.radial-enter .radial-petal,.radial-enter .radial-shapes path{animation:radial-emerge .36s cubic-bezier(.2,.75,.3,1) both;animation-delay:var(--petal-delay,0ms)}
+@keyframes radial-emerge{from{opacity:0;transform:scale(.46)}to{opacity:1;transform:scale(1)}}
+.radial-retract .radial-petal,.radial-retract .radial-shapes path{animation:radial-retreat .32s cubic-bezier(.4,0,.75,.5) both!important;pointer-events:none}
+@keyframes radial-retreat{to{opacity:0;transform:scale(.46)}}
+.radial-mode.picking .radial-petal-copy{width:98px}.radial-mode.picking .radial-petal-copy strong{font-size:12px;max-width:98px;max-height:63px;-webkit-line-clamp:4}
+@media(prefers-reduced-motion:reduce){.radial-retract .radial-petal,.radial-retract .radial-shapes path{animation:none!important;opacity:0}}
+
+.radial-mode .window-actions #pin svg{width:23px;height:23px;stroke-width:1.8;image-rendering:auto}
+.radial-mode #preferences .settings-heading .dialog-top{display:none}

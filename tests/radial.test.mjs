@@ -38,3 +38,14 @@ test('expanded destinations and mirrored fans remain within native window region
   }
  }
 });
+
+test('main fan meets the central axis with narrow consistent gaps',()=>{
+ const first=sector(0,5),last=sector(4,5);
+ assert.ok(Math.abs(first.points[0][0]-RADIAL.cx)<3);
+ assert.ok(Math.abs(last.points[28][0]-RADIAL.cx)<3);
+ assert.ok(RADIAL.inner-RADIAL.hub<=6);
+ for(let i=0;i<4;i++){
+  const a=sector(i,5).points[28],b=sector(i+1,5).points[0];
+  assert.ok(Math.hypot(a[0]-b[0],a[1]-b[1])<5);
+ }
+});
