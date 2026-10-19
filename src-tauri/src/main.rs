@@ -141,6 +141,6 @@ fn main() {
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![load_settings, save_settings, copy_text, paste_text,configure_shortcuts,display_name,set_tracking,dock_window,ai_status,ai_connect,ai_remove,ai_ask,updates::update_status,updates::update_check,updates::update_automatic,updates::update_healthy,updates::update_is_probe,plugins::plugin_status,plugins::plugin_install,plugins::plugin_toggle,plugins::plugin_remove,window_shape::radial_region])
+        .invoke_handler(tauri::generate_handler![load_settings, save_settings, copy_text, paste_text,configure_shortcuts,display_name,set_tracking,dock_window,ai_status,ai_connect,ai_remove,ai_ask,updates::update_status,updates::update_apply,updates::update_check,updates::update_automatic,updates::update_healthy,updates::update_is_probe,plugins::plugin_status,plugins::plugin_import,plugins::plugin_install,plugins::plugin_toggle,plugins::plugin_remove,window_shape::radial_region])
         .run(context).expect("Não foi possível iniciar o Janus");
 }

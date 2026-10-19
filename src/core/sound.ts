@@ -1,6 +1,6 @@
 // Original procedural audio. No recordings or external samples.
 let context:AudioContext|undefined;
-const melodies:Record<string,number[]>={radialOpen:[480,640],radialClose:[580,430],greet:[392,523,659],finish:[523,784],love:[659,784,988],slap:[220,165],dizzy:[440,370,311],annoyed:[294,262],open:[392,523],send:[659,880],question:[440,587],error:[220,196],close:[523,392]};
+const melodies:Record<string,number[]>={curious:[523,622,587],wave:[392,494,659],expand:[392,494],fold:[494,392],navigate:[587],project:[440,554,659],plugin:[523,659,784],radialOpen:[480,640],radialClose:[580,430],greet:[392,523,659],finish:[523,784],love:[659,784,988],slap:[220,165],dizzy:[440,370,311],annoyed:[294,262],open:[392,523],send:[659,880],question:[440,587],error:[220,196],close:[523,392]};
 export const Sound={enabled:true,play(name:string){
  if(!this.enabled||!melodies[name])return;
  try{context??=new AudioContext();if(context.state!=='running'){void context.resume().then(()=>{if(context?.state==='running'&&this.enabled)this.play(name);}).catch(()=>{});return;}

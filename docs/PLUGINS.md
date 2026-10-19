@@ -41,3 +41,14 @@ Publique o pacote assinado no caminho do catálogo oficial somente depois de tes
 A abertura e o recolhimento usam a mesma janela e mantêm o centro imóvel. Os efeitos sonoros respeitam a preferência Sons do Janus. O setor Agente IA mostra o nome do provedor/modelo conectado quando houver conexão.
 
 ![Configurações dentro da área segura do círculo](images/configuracoes-circulares.png)
+
+
+## Adicionar um arquivo local
+
+Em Plugins+, use **Adicionar arquivo** para importar um JSON de até 40 KB. O Janus aceita o pacote assinado oficial ou o JSON de layout de `plugins/menu-circular/plugin.json`. A importação valida o esquema, as cinco ações conhecidas, cores e a permissão `interface.layout`, instala no espaço do layout circular e o ativa. Importar outro layout substitui o layout instalado nesse espaço; desativar volta ao painel clássico.
+
+O arquivo local não precisa da assinatura do publicador, pois é selecionado diretamente pelo usuário. Downloads do catálogo continuam exigindo assinatura. Isso não permite importar JavaScript, Python, executáveis ou novas funções: este formato personaliza apenas o layout já suportado. Outros tipos de plugin exigem APIs futuras.
+
+## Fontes da interface
+
+Há três propriedades CSS semânticas: `--font-title`, `--font-subtitle` e `--font-body`. As três usam Segoe UI por padrão. Pesos, itálico e tamanho não criam famílias adicionais. Essas propriedades preparam a troca de tipografia por uma futura extensão; o formato de layout atual ainda não pode modificá-las.

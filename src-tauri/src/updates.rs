@@ -72,12 +72,20 @@ fn check(dir:&Path,force:bool,app:&tauri::AppHandle)->Result<Status,String>{
     let dir=cache(&root()?)?;if let Some(r)=receipt(&dir){if r.phase=="applied"&&r.version==CURRENT{atomic(&dir.join("healthy"),r.nonce.as_bytes())?;}}
     Ok(())
 }
+static REOPEN:std::sync::atomic::AtomicBool=std::sync::atomic::AtomicBool::new(false);
+#[tauri::command]pub fn update_apply(updates:tauri::State<Updates>)->Result<(),String>{
+ if updates.busy.load(Ordering::SeqCst){return Err("Aguarde o download terminar".into());}
+ let _guard=updates.gate.try_lock().map_err(|_|"Aguarde a operação terminar")?;
+ let dir=cache(&root()?)?;let (manifest,_)=staged(&dir)?;
+ if !read_status(&dir).ready||!protocol::newer(&manifest.version,CURRENT){return Err("Nenhuma atualização pronta".into());}
+ REOPEN.store(true,Ordering::SeqCst);Ok(())
+}
 fn entry_name(value:&str)->bool{!value.is_empty()&&value.len()<200&&!value.contains(['/', '\\', ':'])&&value.to_ascii_lowercase().ends_with(".exe")}
 fn spawn_helper(dir:&Path,mode:&str,entry:&str)->Result<(),String>{
     if !entry_name(entry){return Err("Nome do executável inválido".into());}
     let helper=dir.join("JanusUpdater.exe");normal_file(&helper)?;
     if std::env::current_exe().map_err(|e|e.to_string())?!=helper{fs::copy(std::env::current_exe().map_err(|e|e.to_string())?,&helper).map_err(|_|"Não foi possível preparar o auxiliar")?;}
-    let mut cmd=Command::new(helper);cmd.arg(mode).arg(std::process::id().to_string()).arg(entry).current_dir(dir);
+    let mut cmd=Command::new(helper);if mode=="--janus-apply-update"&&REOPEN.load(Ordering::SeqCst){cmd.arg("--janus-apply-update-reopen");}else{cmd.arg(mode);}cmd.arg(std::process::id().to_string()).arg(entry).current_dir(dir);
     #[cfg(windows)]{use std::os::windows::process::CommandExt;cmd.creation_flags(0x08000000);}
     cmd.spawn().map_err(|_|"Não foi possível iniciar o auxiliar de atualização")?;Ok(())
 }
@@ -170,7 +178,7 @@ fn validate_install(root:&Path,dir:&Path,entry:&Path)->Result<(),String>{
 #[cfg(not(windows))]fn wait_parent(_pid:u32,_entry:&Path,_watch:Option<(&Path,&str)>)->Result<bool,String>{Err("Atualizador disponível no Windows".into())}
 pub fn helper_mode()->bool{
     let args:Vec<String>=std::env::args().collect();let Some(mode)=args.get(1) else{return false;};
-    if !["--janus-apply-update","--janus-recover-update"].contains(&mode.as_str()){return false;}
+    if !["--janus-apply-update","--janus-apply-update-reopen","--janus-recover-update"].contains(&mode.as_str()){return false;}
     let result=(||{
         if args.len()!=4||!entry_name(&args[3]){return Err("Argumentos inválidos".into());}
         let exe=std::env::current_exe().map_err(|e|e.to_string())?.canonicalize().map_err(|e|e.to_string())?;
@@ -178,7 +186,7 @@ pub fn helper_mode()->bool{
         let root=dir.parent().ok_or("Pasta inválida")?;normal_file(dir)?;let entry=root.join(&args[3]);
         let pid=args[2].parse().map_err(|_|"Processo inválido")?;
         wait_parent(pid,&entry,None)?;
-        if mode=="--janus-apply-update"{apply(root,dir,&args[3])?;validate_install(root,dir,&entry)?;}else{let r=receipt(dir).ok_or("Registro ausente")?;restore(root,dir,&r)?;Command::new(&entry).current_dir(root).spawn().map_err(|_|"Versão anterior restaurada; abra o Janus novamente")?;}
+        if mode=="--janus-apply-update"||mode=="--janus-apply-update-reopen"{apply(root,dir,&args[3])?;validate_install(root,dir,&entry)?;if mode=="--janus-apply-update-reopen"{Command::new(&entry).current_dir(root).spawn().map_err(|_|"Atualização instalada; abra o Janus novamente")?;}}else{let r=receipt(dir).ok_or("Registro ausente")?;restore(root,dir,&r)?;Command::new(&entry).current_dir(root).spawn().map_err(|_|"Versão anterior restaurada; abra o Janus novamente")?;}
         Ok::<(),String>(())
     })();
     if let Err(error)=result{if let Ok(exe)=std::env::current_exe(){if let Some(dir)=exe.parent(){let _=fs::write(dir.join("last-error.txt"),error);}}}

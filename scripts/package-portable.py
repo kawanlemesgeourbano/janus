@@ -22,6 +22,9 @@ Atualizações seguintes: o Janus verifica o GitHub ao abrir, no máximo a
 cada seis horas, baixa o pacote assinado e o aplica ao fechar normalmente.
 Aguarde alguns segundos depois de fechar antes de abrir novamente.
 Configurações > Geral permite verificar manualmente ou desativar a busca.
+Quando o pacote estiver pronto, Atualizar e reabrir aplica a atualização e
+abre o Janus automaticamente após a verificação. Fechar normalmente também
+continua aplicando o pacote sem reabrir.
 Uma verificação oculta valida a nova interface, sem consultar IA nem salvar
 preferências. Se a inicialização não for confirmada em até 90 segundos, o
 auxiliar restaura a versão anterior. O backup não inclui migrações de dados;

@@ -32,12 +32,32 @@ fn verify_with_key(bytes:&[u8],key:&[u8;32])->Result<Layout,String>{
     validate(serde_json::from_slice(&payload).map_err(|_|"Descrição do plugin inválida")?)
 }
 fn verify(bytes:&[u8])->Result<Layout,String>{let key=hex::decode(include_str!("../updater-public-key.hex").trim()).map_err(|_|"Chave inválida")?.try_into().map_err(|_|"Chave inválida")?;verify_with_key(bytes,&key)}
+#[derive(Serialize,Deserialize)]#[serde(deny_unknown_fields)]struct LocalPackage{local:bool,layout:Layout}
+fn read_package(bytes:&[u8])->Result<Layout,String>{
+ if bytes.len()>40000{return Err("Pacote muito grande".into());}
+ if let Ok(package)=serde_json::from_slice::<LocalPackage>(bytes){if package.local{return validate(package.layout);}}
+ verify(bytes)
+}
+#[tauri::command]pub fn plugin_import(plugins:tauri::State<Plugins>,content:String)->Result<Status,String>{
+ let _guard=plugins.0.try_lock().map_err(|_|"Aguarde a operação terminar")?;
+ if content.len()>40000{return Err("Pacote muito grande".into());}
+ let package=prepare_local(&content)?;
+ let dir=directory()?;atomic(&dir.join("menu-circular.json"),&package)?;atomic(&dir.join("state.json"),br#"{"enabled":true}"#)?;read_status()
+}
+fn prepare_local(content:&str)->Result<Vec<u8>,String>{
+ if content.len()>40000{return Err("Pacote muito grande".into());}
+ let bytes=content.as_bytes();
+ let result=if let Ok(layout)=verify(bytes){serde_json::to_vec(&LocalPackage{local:true,layout})}
+ else{let layout=validate(serde_json::from_str(bytes_to_text(bytes)?).map_err(|_|"Use um JSON de layout compatível com o Janus")?)?;serde_json::to_vec(&LocalPackage{local:true,layout})}.map_err(|e|e.to_string())?;
+ Ok(result)
+}
+fn bytes_to_text(bytes:&[u8])->Result<&str,String>{std::str::from_utf8(bytes).map_err(|_|"Use um arquivo JSON UTF-8".into())}
 fn directory()->Result<PathBuf,String>{let exe=std::env::current_exe().map_err(|e|e.to_string())?;let root=exe.parent().ok_or("Pasta indisponível")?.join("dados");normal_file(&root)?;let dir=root.join("plugins");normal_file(&dir)?;fs::create_dir_all(&dir).map_err(|_|"Não foi possível salvar plugins nesta pasta")?;Ok(dir)}
 fn read_status()->Result<Status,String>{
     let dir=directory()?;let file=dir.join("menu-circular.json");normal_file(&file)?;normal_file(&dir.join("state.json"))?;
     let enabled=fs::read(dir.join("state.json")).ok().and_then(|b|serde_json::from_slice::<State>(&b).ok()).unwrap_or_default().enabled;
     if !file.exists(){return Ok(Status{installed:false,enabled:false,layout:None,message:"Disponível para baixar".into()});}
-    let result=(||{if fs::metadata(&file).map_err(|e|e.to_string())?.len()>40000{return Err("Pacote muito grande".into());}verify(&fs::read(file).map_err(|e|e.to_string())?)})();
+    let result=(||{if fs::metadata(&file).map_err(|e|e.to_string())?.len()>40000{return Err("Pacote muito grande".into());}read_package(&fs::read(file).map_err(|e|e.to_string())?)})();
     match result{Ok(layout)=>Ok(Status{installed:true,enabled,layout:Some(layout),message:if enabled{"Ativo"}else{"Instalado · desativado"}.into()}),Err(error)=>Ok(Status{installed:true,enabled:false,layout:None,message:error})}
 }
 #[tauri::command]pub fn plugin_status()->Result<Status,String>{read_status()}
@@ -61,6 +81,13 @@ fn read_status()->Result<Status,String>{
 }
 #[cfg(test)]mod tests{
     use super::*;use ed25519_dalek::{SigningKey,Signer};
+    #[test]fn manual_layout_is_validated_without_weakening_download_signatures(){
+        let source=include_str!("../../plugins/menu-circular/plugin.json");
+        assert!(verify(source.as_bytes()).is_err());
+        let stored=prepare_local(source).unwrap();assert!(read_package(&stored).is_ok());
+        let mut invalid:serde_json::Value=serde_json::from_str(source).unwrap();invalid["permissions"]=serde_json::json!(["files.write"]);
+        assert!(prepare_local(&invalid.to_string()).is_err());assert!(prepare_local(&"x".repeat(40001)).is_err());
+    }
     #[test]fn layout_requires_signature_and_only_interface_permission(){
         let key=SigningKey::from_bytes(&[8;32]);let payload=include_bytes!("../../plugins/menu-circular/plugin.json");
         let wrap=|data:&[u8]|serde_json::to_vec(&serde_json::json!({"payload":hex::encode(data),"signature":hex::encode(key.sign(data).to_bytes())})).unwrap();
