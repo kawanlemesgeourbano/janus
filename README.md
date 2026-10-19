@@ -4,21 +4,21 @@ Assistente portátil para Windows: consulta de divergências e parâmetros, atal
 
 ## Baixar Janus
 
-[**⬇ Baixar Janus para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.7/Janus-Windows-portatil.zip)
+[**⬇ Baixar Janus para Windows — portátil (.zip)**](https://github.com/kawanlemesgeourbano/janus/releases/download/v1.0a.8/Janus-Windows-portatil.zip)
 
 Extraia o ZIP em uma pasta onde você possa salvar arquivos e abra **Janus.exe**. Sem instalador e sem execução como administrador. Windows de 64 bits com Microsoft Edge WebView2 disponível.
 
 O programa começa sem projetos cadastrados. Quem usa 1.0a precisa fechar o Janus e substituir o executável uma vez, mantendo a pasta `dados`. Depois, o atualizador verifica novas versões ao abrir, baixa o pacote assinado e aplica ao fechar. Aguarde alguns segundos antes de abrir novamente.
 
-[Detalhes do download e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.7). Esta é uma versão alpha.
+[Detalhes do download e verificação SHA-256](https://github.com/kawanlemesgeourbano/janus/releases/tag/v1.0a.8). Esta é uma versão alpha.
 
 ## Painel clássico
 
 <img src="docs/images/painel-classico.png" alt="Painel clássico do Janus com controles de Plugins e configurações no topo" width="330">
 
-O Janus acena ao entrar, reage ao mouse e usa sons próprios. Ao sair do mouse, recolhe na posição habitual; ao voltar, expande. O alfinete mantém sobre outras janelas e **Configurações → Janela → Recolher automaticamente** controla esse comportamento separadamente.
+O Janus acena ao entrar e reage ao mouse. No chat, ganha animações ao escutar, pensar e responder; também pisca ao fixar o painel. Os efeitos sonoros são sintetizados no próprio aplicativo, com timbre suave e volume mais perceptível. A reprodução é reativada na primeira interação se o ambiente bloquear o áudio automático. A opção Sons do Janus continua controlando todos os efeitos. Ao sair do mouse, recolhe na posição habitual; ao voltar, expande. O alfinete mantém sobre outras janelas e **Configurações → Janela → Recolher automaticamente** controla esse comportamento separadamente.
 
-Plugins+ oferece uma lista compacta e importação manual de layouts JSON compatíveis. Downloads oficiais mantêm a validação de assinatura. Quando um pacote de atualização estiver pronto, **Atualizar e reabrir** fecha, aplica, valida e abre o programa novamente.
+Plugins+ e configurações ficam à direita das abas Divergências e Parâmetros. A página de plugins mantém uma lista compacta, importação manual de layouts JSON compatíveis e a observação no rodapé. Downloads oficiais mantêm a validação de assinatura. Quando um pacote de atualização estiver pronto, **Atualizar e reabrir** fecha, aplica, valida e abre o programa novamente.
 
 ## Fontes · plugin opcional
 

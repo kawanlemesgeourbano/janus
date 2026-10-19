@@ -36,7 +36,7 @@ export async function setupPluginsPage(container:HTMLElement,native:boolean,onCh
   const button=(text:string,action:()=>void)=>{const item=document.createElement('button');item.textContent=text;item.disabled=busy;item.onclick=action;return item;};
   if(!state.installed)actions.append(button('Baixar',()=>void operation('install')));
   else{const toggle=button(state.enabled?'Desativar':'Ativar',()=>void operation('toggle',!state.enabled));toggle.setAttribute('role','switch');toggle.setAttribute('aria-checked',String(state.enabled));toggle.disabled=busy||(!state.layout&&!state.enabled);actions.append(toggle,button('Remover',()=>void operation('remove')));}
-  card.append(copy,actions);container.append(card);const help=document.createElement('small');help.className='plugins-note';help.textContent='Arquivos JSON de layout compatíveis. A ativação independe do projeto.';container.append(help);
+  card.append(copy,actions);container.append(card);
  };
 
  try{state=native?await invoke<Status>('plugin_status'):await browserStatus();await onChange(state.enabled?state.layout:null);}catch(error){state.message=String(error);}

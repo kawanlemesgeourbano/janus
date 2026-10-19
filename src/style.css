@@ -90,3 +90,20 @@ h3 *,h4 *{font-family:var(--font-subtitle)!important}
 :root{font-synthesis:weight style}
 
 .radial-petal-copy strong{font-family:var(--font-subtitle)!important}
+
+/* Panel tools stay aligned with the project tabs; plugin help follows the list. */
+.tabs{gap:10px;flex-wrap:nowrap}
+.tabs>.project-tools{display:flex;width:auto;margin:0 0 0 auto;gap:6px;flex:0 0 auto;align-items:center;justify-content:flex-end}
+.tabs .project-tools .plugins-launch{min-height:29px;padding:5px 8px;gap:5px;font-size:10px;margin:0;white-space:nowrap}
+.tabs .project-tools .plugins-launch-mark{width:17px;height:17px;font-size:15px}
+.tabs .project-tools .plugins-launch:after,.tabs .project-tools .settings-button:after{display:none}
+.tabs .project-tools .settings-button{margin:0;width:29px;height:29px}
+.tabs .project-tools .plugins-launch span{margin:0;padding:0;background:transparent;font-size:inherit}
+.tabs .project-tools .plugins-launch .plugins-launch-mark{background:#3f6680}
+.tabs>button{white-space:nowrap}
+#plugins-page>.plugins-footer-note{display:block;flex-shrink:0;margin: auto 0 0;padding:18px 2px 13px;border-top:1px solid #9bb1ba55;line-height:1.6;font-size:10px;color:#687e86}
+#plugins-content{flex:0 0 auto!important}
+#font-plugin-card{margin-bottom:18px}
+@media(max-width:410px){.tabs{gap:7px}.tabs>button{font-size:10px}.tabs .project-tools .plugins-launch{padding:5px 6px;font-size:9px}.tabs .project-tools{gap:4px}}
+
+.tabs>.project-tools{opacity:var(--content-opacity,1)}
