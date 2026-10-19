@@ -1,38 +1,39 @@
 import type {Layout} from './plugin-manager';
-import {RADIAL,COMPACT,PICKER,sector,circle,pickerPage,brief} from './radial-model.mjs';
-export type Geometry={width:number;height:number;cx:number;cy:number;hub:number;inner:number;outer:number};
+import {RADIAL,COMPACT,PICKER,WORKSPACE,orient,sector,circle,pickerPage,brief} from './radial-model.mjs';
+export type Geometry={width:number;height:number;cx:number;cy:number;hub:number;inner:number;outer:number;side?:string};
 export type RadialFrame={geometry:Geometry;polygons:number[][][]};
-const icons:Record<string,string>={warning:'<path d="M12 3 2 21h20z"/><path d="M12 9v5m0 3v1"/>',parameters:'<path d="M5 3h14v18H5zM8 7h8M8 11h8M8 15h5"/>',plugins:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 7v10M7 12h10"/>',agent:'<rect x="4" y="6" width="16" height="13" rx="5"/><path d="M12 2v4M8 11v2m8-2v2m-6 3h4"/>',settings:'<path d="m10 3-.6 3-2 1-3-.2-2 3 2 2-.2 3 2 2 3-1 2 1 1 3h4l1-3 2-1 2 1 2-3-2-2 .2-3-2-2-3 1-2-1-.5-3z"/><circle cx="12" cy="12" r="3"/>'};
+const icons:Record<string,string>={warning:'<path d="M12 3 2 21h20z"/><path d="M12 9v5m0 3v1"/>',parameters:'<path d="M5 3h14v18H5zM8 7h8M8 11h8M8 15h5"/>',plugins:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 7v10M7 12h10"/>',agent:'<rect x="4" y="6" width="16" height="13" rx="5"/><path d="M12 2v4M8 11v2m8-2v2m-6 3h4"/>',settings:'<path d="m9.7 3-.5 2-1.5.9-2-.5-2.3 4 1.5 1.4v1.8L3.4 14l2.3 4 2-.5 1.5.9.5 2h4.6l.5-2 1.5-.9 2 .5 2.3-4-1.5-1.4v-1.8l1.5-1.4-2.3-4-2 .5-1.5-.9-.5-2z"/><circle cx="12" cy="12" r="3"/>'};
 const svgIcon=(name:string)=>`<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icons[name]||icons.plugins}</svg>`;
 export class RadialView{
  readonly element:HTMLElement;
- constructor(private root:HTMLElement,private layout:Layout){
+ constructor(private root:HTMLElement,private layout:Layout,private left=false){
   this.element=document.createElement('section');this.element.id='radial-root';this.element.className='radial-surface';this.element.setAttribute('aria-label','Menu circular do Janus');root.querySelector('.shell')!.append(this.element);
   for(const [key,color] of Object.entries(layout.palette))root.style.setProperty('--radial-'+key,color);
  }
  destroy(){this.element.remove();}
- private base(compact=false,picking=false){
-  this.element.replaceChildren();const geometry:Geometry=picking?PICKER:compact?COMPACT:RADIAL;
-  this.root.style.setProperty('--radial-cx',geometry.cx+'px');this.root.style.setProperty('--radial-cy',geometry.cy+'px');
+ private base(compact=false,picking=false,workspace=false){
+  const mode=picking?'picker':compact?'compact':workspace?'workspace':'home';this.element.classList.toggle('radial-enter',this.element.dataset.mode!==mode);this.element.dataset.mode=mode;this.element.replaceChildren();const geometry:Geometry=orient(picking?PICKER:compact?COMPACT:workspace?WORKSPACE:RADIAL,this.left);
+  document.documentElement.style.setProperty('--radial-cx',geometry.cx+'px');document.documentElement.style.setProperty('--radial-cy',geometry.cy+'px');this.root.style.setProperty('--radial-hub-size',geometry.hub+'px');this.root.style.setProperty('--radial-cx',geometry.cx+'px');this.root.style.setProperty('--radial-cy',geometry.cy+'px');
   const hub=document.createElement('div');hub.className='radial-hub';hub.style.left=geometry.cx-geometry.hub+'px';hub.style.top=geometry.cy-geometry.hub+'px';hub.style.width=hub.style.height=geometry.hub*2+'px';this.element.append(hub);
   return {geometry,hub,polygons:[circle(geometry)]} as RadialFrame&{hub:HTMLElement};
  }
  private petals(labels:{title:string;detail:string;icon?:string;number:string;selected?:boolean;click:()=>void;focus?:()=>void}[],frame:RadialFrame){
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('radial-shapes');svg.setAttribute('viewBox',`0 0 ${frame.geometry.width} ${frame.geometry.height}`);svg.setAttribute('aria-hidden','true');this.element.prepend(svg);
   labels.forEach((item,index)=>{
-   const shape=sector(index,labels.length,frame.geometry);frame.polygons.push(shape.points);
-   const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',shape.path);if(item.selected)path.classList.add('selected');svg.append(path);
-   const button=document.createElement('button');button.className='radial-petal';button.style.clipPath=`path('${shape.path}')`;button.setAttribute('aria-label',item.title);if(item.selected!==undefined)button.setAttribute('aria-pressed',String(item.selected));button.dataset.radialIndex=String(index);button.onclick=item.click;
+   const shape=sector(index,labels.length,frame.geometry);frame.polygons.push(sector(index,labels.length,{...frame.geometry,inner:frame.geometry.inner*.92,outer:frame.geometry.outer+2}).points);
+   const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',shape.path);if(item.selected)path.classList.add('selected');path.style.setProperty('--petal-delay',`${index*35}ms`);svg.append(path);
+   const button=document.createElement('button');button.className='radial-petal';const xs=shape.points.map((p:number[])=>p[0]),ys=shape.points.map((p:number[])=>p[1]),x=Math.min(...xs),y=Math.min(...ys),w=Math.max(...xs)-x,h=Math.max(...ys)-y;button.style.inset='auto';button.style.left=x+'px';button.style.top=y+'px';button.style.width=w+'px';button.style.height=h+'px';button.style.transformOrigin=`${frame.geometry.cx-x}px ${frame.geometry.cy-y}px`;button.style.clipPath='polygon('+shape.points.map((p:number[])=>`${(p[0]-x)/w*100}% ${(p[1]-y)/h*100}%`).join(',')+')';button.setAttribute('aria-label',item.title);if(item.selected!==undefined)button.setAttribute('aria-pressed',String(item.selected));button.style.setProperty('--petal-delay',`${index*35}ms`);button.dataset.radialIndex=String(index);button.onclick=item.click;
    if(item.focus){button.onpointerenter=item.focus;button.onfocus=item.focus;}
-   const content=document.createElement('span');content.className='radial-petal-copy';content.style.left=shape.label[0]+'px';content.style.top=shape.label[1]+'px';
+   const content=document.createElement('span');content.className='radial-petal-copy';content.style.left=(shape.label[0]-x)+'px';content.style.top=(shape.label[1]-y)+'px';
    const key=document.createElement('kbd');key.textContent=item.number;content.append(key);
    if(item.icon){const icon=document.createElement('span');icon.className='radial-icon';icon.innerHTML=svgIcon(item.icon);content.append(icon);}
    const title=document.createElement('strong');title.textContent=item.title;const detail=document.createElement('small');detail.textContent=item.detail;content.append(title,detail);button.append(content);this.element.append(button);
   });
  }
- main(compact:boolean,counts:{divergences:number;parameters:number},action:(name:string)=>void):RadialFrame{
-  const frame=this.base(compact);this.element.setAttribute('aria-label',compact?'Janus circular recolhido':'Menu circular do Janus');
-  if(!compact)this.petals(this.layout.slots.map((slot,index)=>({title:slot.label,detail:slot.action==='divergences'?`${counts.divergences} divergências`:slot.action==='parameters'?`${counts.parameters} parâmetros`:slot.detail,icon:slot.icon,number:String(index+1),click:()=>action(slot.action)})),frame);
+ main(compact:boolean,counts:{divergences:number;parameters:number},action:(name:string)=>void,workspace=false,route=''):RadialFrame{
+  const frame=this.base(compact,false,workspace);this.element.setAttribute('aria-label',compact?'Janus circular recolhido':'Menu circular do Janus');
+  if(!compact)this.petals(this.layout.slots.map((slot,index)=>({title:slot.label,detail:slot.action==='divergences'?`${counts.divergences} ${counts.divergences===1?'divergência':'divergências'}`:slot.action==='parameters'?`${counts.parameters} ${counts.parameters===1?'parâmetro':'parâmetros'}`:slot.action==='agent'?'Conversa e ajuda':slot.action==='plugins'?'Complementos':'Preferências',selected:workspace?slot.action===route:undefined,icon:slot.icon,number:String(index+1),click:()=>action(slot.action)})),frame);
+  if(workspace){const back=document.createElement('button');back.className='radial-home';back.textContent='← Menu circular';back.onclick=()=>action('home');frame.hub.append(back);return frame;}
   const gi=document.createElement('img');gi.src='./gi-logo.jpg';gi.alt='GI Geotecnologia';gi.className='radial-gi';frame.hub.append(gi);
   const hint=document.createElement('small');hint.className='radial-main-hint';hint.dataset.help='';hint.textContent=compact?'Ctrl + Shift + D':'1–5 com o menu em foco';frame.hub.append(hint);
   return frame;

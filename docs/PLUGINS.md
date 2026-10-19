@@ -4,7 +4,7 @@ Plugins+ oferece download, ativação, desativação e remoção. Nenhum plugin 
 
 ## Primeiro plugin: Menu circular
 
-Abre um menu em leque com divergências, parâmetros, Plugins+, agente IA e configurações. O Janus continua desenhando seu próprio personagem e logo. As páginas completas abrem no painel, com um botão para voltar ao menu circular.
+Abre um menu em leque com divergências, parâmetros, Plugins+, agente IA e configurações. O Janus continua desenhando seu próprio personagem e logo. Todas as funções permanecem no modo circular. O centro se amplia para listas, parâmetros, Plugins+, chat e configurações; o botão Menu circular retorna ao início.
 
 - **Ctrl + Shift + D:** abrir/recolher o menu circular.
 - **1 a 5, com o menu em foco:** abrir uma das cinco funções.
@@ -28,3 +28,12 @@ python scripts/sign-plugin.py --key-file CAMINHO_PRIVADO --source plugins/menu-c
 ```
 
 Publique o pacote assinado no caminho do catálogo oficial somente depois de testar seu conteúdo no host. Os testes rejeitam permissões extras, cores fora do formato hexadecimal, ações desconhecidas, pacotes alterados e geometrias inválidas.
+
+
+### Comportamento do menu
+
+- O centro tem movimento sutil. Os setores surgem suavemente ao passar o mouse pelo círculo recolhido; sem fixar, recolhem após sair. A preferência de redução de movimento do Windows é respeitada.
+- O alfinete mantém o Janus sobre outras janelas. Em **Configurações → Janela → Posição habitual**, escolha um canto; ao fixar, o menu respeita esse canto. Nos cantos da esquerda, os setores abrem para a direita.
+- **−** minimiza para a barra de tarefas e **×** encerra. **Ctrl + Shift + D** continua abrindo/recolhendo o círculo.
+- Todas as páginas ficam no círculo ampliado, com rolagem no conteúdo e uma única cabeça do assistente. Trocar de função não desativa o plugin.
+- Quem já instalou o Menu circular recebe os ajustes de apresentação ao atualizar o Janus; não precisa reinstalar o pacote do plugin.

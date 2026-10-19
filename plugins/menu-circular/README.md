@@ -13,3 +13,12 @@ O estado de ativação é independente do projeto. A apresentação dos textos e
 Não há seleção de versões na interface do plugin. O campo técnico `schema` identifica o formato de dados aceito pelo host.
 
 Personagem, animações e sons continuam sendo os próprios do Janus. A imagem de referência não é incorporada ao plugin.
+
+
+### Comportamento do menu
+
+- O centro tem movimento sutil. Os setores surgem suavemente ao passar o mouse pelo círculo recolhido; sem fixar, recolhem após sair. A preferência de redução de movimento do Windows é respeitada.
+- O alfinete mantém o Janus sobre outras janelas. Em **Configurações → Janela → Posição habitual**, escolha um canto; ao fixar, o menu respeita esse canto. Nos cantos da esquerda, os setores abrem para a direita.
+- **−** minimiza para a barra de tarefas e **×** encerra. **Ctrl + Shift + D** continua abrindo/recolhendo o círculo.
+- Todas as páginas ficam no círculo ampliado, com rolagem no conteúdo e uma única cabeça do assistente. Trocar de função não desativa o plugin.
+- Quem já instalou o Menu circular recebe os ajustes de apresentação ao atualizar o Janus; não precisa reinstalar o pacote do plugin.
